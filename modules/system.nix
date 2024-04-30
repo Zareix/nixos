@@ -72,6 +72,10 @@ in {
     stow
     zoxide
     zsh
+
+    (pkgs.python3.withPackages (python-pkgs: [
+      python-pkgs.uv
+    ]))
   ];
   programs.zsh.enable = true;
 }
