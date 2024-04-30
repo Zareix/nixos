@@ -74,7 +74,7 @@ in {
     zsh
 
     (pkgs.python3.withPackages (python-pkgs: [
-      python-pkgs.uv
+      python-pkgs.requests
     ]))
   ];
   programs.zsh.enable = true;
