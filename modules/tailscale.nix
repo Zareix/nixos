@@ -1,5 +1,5 @@
 { pkgs, ... }:{
-  environment.systemPackages = with pkgs; config.environment.systemPackages ++ [
+  environment.systemPackages = with pkgs; environment.systemPackages ++ [
     tailscale
   ];
 
