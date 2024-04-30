@@ -55,6 +55,7 @@ in {
     bat
     bun
     curl
+    eza
     fastfetch
     fzf
     git
