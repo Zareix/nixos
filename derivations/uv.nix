@@ -13,7 +13,6 @@ let
       url = "https://github.com/astral-sh/uv/releases/download/${version}/uv-${systemType}.tar.gz";
     in
     stdenv.mkDerivation {
-      inherit name version;
       src = fetchurl {
         inherit url sha256;
       };
