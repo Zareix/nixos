@@ -59,6 +59,7 @@ in {
     fastfetch
     fzf
     git
+    git-crypt
     gnupg
     jq
     nano
