@@ -2,5 +2,10 @@
 
 ## Usage
 
-1. Copy content of `setup.sh` to `/some/path/setup.sh`
-2. Run `/some/path/setup.sh`
+```sh
+# as root
+nano /tmp/setup.sh
+# paste content of setup.sh
+chmod +x /tmp/setup.sh
+/tmp/setup.sh
+```

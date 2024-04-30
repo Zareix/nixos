@@ -6,6 +6,7 @@
       ../../modules/system.nix
       ../../modules/docker.nix
       ../../modules/tailscale.nix
+      ../../modules/nfs-client.nix
     ];
 
   networking.hostName = "nixos-250";
