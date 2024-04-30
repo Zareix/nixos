@@ -8,6 +8,7 @@
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
+    ../derivations/uv.nix
   ];
 
   users.users.raphaelgc = {
