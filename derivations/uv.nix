@@ -17,7 +17,6 @@ let
         inherit url sha256;
       };
       sourceRoot = ".";
-      nativeBuildInputs = [ unzip ];
       installPhase = ''
         mkdir -p $out/bin
         mv uv $out/bin
