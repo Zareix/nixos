@@ -75,7 +75,6 @@ in {
 
     (pkgs.python3.withPackages (python-pkgs: [
       python-pkgs.requests
-      (pkgs.callPackage ../derivations/uv.nix)
     ]))
   ];
   programs.zsh.enable = true;

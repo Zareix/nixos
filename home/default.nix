@@ -21,5 +21,10 @@
     stateVersion = "23.11";
   };
 
+  programs.git = {
+    userName = "Zareix";
+    userEmail = "raphcatarino@gmail.com";
+  }
+
   programs.home-manager.enable = true;
 }
