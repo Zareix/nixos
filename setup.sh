@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -p git-crypt -i bash
 
 set -e
 
@@ -16,7 +17,7 @@ cd nixos
 # prompt user for secret-key-base64
 read -r -p "Enter secret-key-base64: " secret_key
 echo "$secret_key" | base64 -d >./.secret-key
-nix-shell -p git-crypt --run "git-crypt unlock ./.secret-key"
+git-crypt unlock ./.secret-key
 
 # update nix channel
 nix-channel --update
