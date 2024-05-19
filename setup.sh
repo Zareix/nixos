@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -p git -p git-crypt
+#!nix-shell -p git -p git-crypt -i bash
 # shellcheck shell=bash
 
 set -e
