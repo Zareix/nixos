@@ -14,9 +14,15 @@ rm -rf nixos
 git clone https://github.com/Zareix/nixos
 cd nixos
 
-read -r -p "Enter secret-key in base64: " secret_key
+secret_key=''
+if [ -n "$1" ]; then
+  secret_key="$1"
+else
+  read -r -p "Enter secret-key in base64: " secret_key
+fi
+
 echo "$secret_key" | base64 -d >./.secret-key
 git-crypt unlock ./.secret-key
 
 nix-channel --update
-nixos-rebuild switch --flake .
+nixos-rebuild switch --flake ".#${2:-nixos}"
