@@ -42,8 +42,19 @@ if [ -z "$1" ]; then
 else
   nixos-rebuild switch --flake ".#${1}"
 fi
+
+git config --global --add safe.directory /etc/nixos
 ' >/tmp/setup.sh
 chmod +x /tmp/setup.sh
 nix-channel --update
 /tmp/setup.sh lxc
+```
+
+## Update
+
+```sh
+cd /etc/nixos
+sudo nix flake update
+sudo nix-channel --update
+sudo nixos-rebuild switch --flake .#lxc
 ```
