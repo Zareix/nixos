@@ -31,5 +31,5 @@ fi
 ' >/tmp/setup.sh
 chmod +x /tmp/setup.sh
 nix-channel --update
-/tmp/setup.sh
+/tmp/setup.sh lxc
 ```
