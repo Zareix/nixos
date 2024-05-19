@@ -4,10 +4,10 @@
       "flake": false,
       "locked": {
         "lastModified": 1714433807,
-        "narHash": "sha256-uEy03xwc04PXvA3sXoh4RplkbvWgl+HGZ5+7qJDjCRQ=",
+        "narHash": "sha256-HRsqW7IeMWJ8iLfSBh6vy6PmhrW64z5xC5yoN/WqyWo=",
         "owner": "Zareix",
         "repo": "dotfiles",
-        "rev": "0b8abca5e52c97dbf323f893b483fb6bde7892a2",
+        "rev": "40255afdf698ff8100b143638a0332fdaa8fa979",
         "type": "github"
       },
       "original": {
