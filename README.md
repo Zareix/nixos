@@ -3,6 +3,20 @@
 ## Usage
 
 ```sh
+echo '{ pkgs, modulesPath, ... }:
+
+{
+  imports = [
+    (modulesPath + "/virtualisation/proxmox-lxc.nix")
+  ];
+
+  environment.systemPackages = [
+    pkgs.vim
+  ];
+}' >/etc/nixos/configuration.nix
+nix-channel --update
+nixos-rebuild switch
+
 echo '#! /usr/bin/env nix-shell
 #! nix-shell -i bash -p git git-crypt
 
