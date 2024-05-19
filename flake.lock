@@ -4,7 +4,7 @@
       "flake": false,
       "locked": {
         "lastModified": 1714433807,
-        "narHash": "sha256-HRsqW7IeMWJ8iLfSBh6vy6PmhrW64z5xC5yoN/WqyWo=",
+        "narHash": "sha256-1w8rEZuUk/MyI27FaOhJ+9W9BPtv3AQ/VnokQ3I5f6s=",
         "owner": "Zareix",
         "repo": "dotfiles",
         "rev": "40255afdf698ff8100b143638a0332fdaa8fa979",
