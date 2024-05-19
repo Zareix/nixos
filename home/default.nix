@@ -14,7 +14,7 @@
         cp -rL ./.tmp/dotfiles ./dotfiles
         rm -rf ./.tmp/dotfiles
         cd ./dotfiles
-        ${pkgs.stow}/bin/stow --adopt git nano fastfetch starship zsh linux
+        ${pkgs.stow}/bin/stow --adopt git nano fastfetch powerline10k zsh linux
       '';
     };
     
