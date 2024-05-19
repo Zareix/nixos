@@ -19,11 +19,11 @@
     ...
   }: {
     nixosConfigurations={
-      nixos-250 = nixpkgs.lib.nixosSystem {
+      lxc = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
-          ./hosts/nixos-250
+          ./hosts/lxc
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;

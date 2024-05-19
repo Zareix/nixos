@@ -9,7 +9,7 @@
       ../../modules/nfs-client.nix
     ];
 
-  networking.hostName = "nixos-250";
+  networking.hostName = "lxc";
 
   system.stateVersion = "23.11";
 }
