@@ -1,5 +1,10 @@
-{ config, pkgs, lib, dotfiles, ... }:
-
+{
+  config,
+  pkgs,
+  lib,
+  dotfiles,
+  ...
+}:
 {
   home = {
     username = "raphaelgc";
@@ -17,7 +22,7 @@
         ${pkgs.stow}/bin/stow --adopt git nano fastfetch powerline10k zsh linux
       '';
     };
-    
+
     stateVersion = "23.11";
   };
 

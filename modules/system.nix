@@ -3,27 +3,28 @@
   lib,
   modulesPath,
   ...
-}: let
+}:
+let
   username = "raphaelgc";
-in {
-  imports = [
-    (modulesPath + "/virtualisation/proxmox-lxc.nix")
-  ];
-
+in
+{
   users.users.${username} = {
     isNormalUser = true;
     description = username;
-    extraGroups = ["wheel"];
+    extraGroups = [ "wheel" ];
     uid = 1000;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJZwRQQJPlgMKHR2hGm2pI41xEu+Is9QSI966HV6i9uZ raphcatarino@gmail.com"
     ];
     shell = pkgs.zsh;
   };
-  nix.settings.trusted-users = [username];
+  nix.settings.trusted-users = [ username ];
 
   nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 
   nix.gc = {
@@ -75,9 +76,7 @@ in {
     zoxide
     zsh
 
-    (pkgs.python3.withPackages (python-pkgs: [
-      python-pkgs.requests
-    ]))
+    (pkgs.python3.withPackages (python-pkgs: [ python-pkgs.requests ]))
   ];
   programs.zsh.enable = true;
 }
