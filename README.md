@@ -47,7 +47,7 @@ git config --global --add safe.directory /etc/nixos
 ' >/tmp/setup.sh
 chmod +x /tmp/setup.sh
 nix-channel --update
-/tmp/setup.sh lxc
+/tmp/setup.sh <name>
 ```
 
 ## Update
