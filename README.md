@@ -54,10 +54,13 @@ nix-channel --update
 ### To deploy on Hetzner
 
 - First boot with server using a default OS like Ubuntu 22.04
-- Then run nixos-infect script :
+- Then add the following to cloud-init
 
   ```sh
-  curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | NIX_CHANNEL=nixos-24.05 bash -x
+  #cloud-config
+
+  runcmd:
+    - curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | PROVIDER=hetznercloud NIX_CHANNEL=nixos-24.05 bash 2>&1 | tee /tmp/infect.log
   ```
 
 - Then run following commands :
