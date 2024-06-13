@@ -1,8 +1,8 @@
 {
   description = "A simple NixOS flake";
+  nixos-version = "24.05";
 
   inputs = {
-    nixos-version = "24.05";
 
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-${nixos-version}";
     home-manager.url = "github:nix-community/home-manager/release-${nixos-version}";
