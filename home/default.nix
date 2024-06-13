@@ -3,7 +3,6 @@
   pkgs,
   lib,
   dotfiles,
-  nixos-release,
   ...
 }:
 {
@@ -24,7 +23,7 @@
       '';
     };
 
-    stateVersion = nixos-release;
+    stateVersion = "24.05";
   };
 
   programs.git = {

@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  nixos-release,
-  ...
-}:
+{ config, pkgs, ... }:
 
 {
   imports = [
@@ -13,6 +8,4 @@
     ../../modules/tailscale.nix
     ../../modules/nfs-client.nix
   ];
-
-  system.stateVersion = nixos-release;
 }

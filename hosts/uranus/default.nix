@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  nixos-release,
-  ...
-}:
+{ config, pkgs, ... }:
 
 {
   imports = [
@@ -17,5 +12,4 @@
     address = [ "2a01:4f8:c013:4993::/64" ];
   };
 
-  system.stateVersion = nixos-release;
 }

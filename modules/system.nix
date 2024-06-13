@@ -8,6 +8,9 @@ let
   username = "raphaelgc";
 in
 {
+  system.stateVersion = "24.05
+";
+
   users.users.${username} = {
     isNormalUser = true;
     description = username;
