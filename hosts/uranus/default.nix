@@ -2,11 +2,10 @@
 
 {
   imports = [
-    ../../modules/proxmox.nix
+    ../../modules/hetzner.nix
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
-    ../../modules/nfs-client.nix
   ];
 
   system.stateVersion = "24.05";

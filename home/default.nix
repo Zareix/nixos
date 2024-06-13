@@ -23,7 +23,7 @@
       '';
     };
 
-    stateVersion = "23.11";
+    stateVersion = "24.05";
   };
 
   programs.git = {
