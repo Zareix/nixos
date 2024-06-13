@@ -56,48 +56,51 @@ nix-channel --update
 - First boot with server using a default OS like Ubuntu 22.04
 - Then add the following to cloud-init
 
-  ```sh
-  #cloud-config
+```yaml
+#cloud-config
 
-  runcmd:
-    - curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | PROVIDER=hetznercloud NIX_CHANNEL=nixos-24.05 bash 2>&1 | tee /tmp/infect.log
-  ```
+runcmd:
+  - curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | PROVIDER=hetznercloud NIX_CHANNEL=nixos-24.05 bash 2>&1 | tee /tmp/infect.log
+```
 
-- Then run following commands :
+- Replace `<name>` by the hostname, then run following commands :
 
-  ```sh
-  echo '#! /usr/bin/env nix-shell
-  #! nix-shell -i bash -p git git-crypt
+```sh
+echo '#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p git git-crypt
 
-  set -e
+set -e
 
-  if [ "$EUID" -ne 0 ]; then
+if [ "$EUID" -ne 0 ]; then
   echo "Please run as root"
   exit
-  fi
+fi
 
-  cd /etc
-  mv nixos nixos.bak
-  git clone https://github.com/Zareix/nixos
-  cd nixos
+cd /etc
+mv nixos nixos.bak
+git clone https://github.com/Zareix/nixos
+cd nixos
 
-  read -r -p "Enter secret-key in base64: " secret_key
-  echo "$secret_key" | base64 -d >./.secret-key
-  git-crypt unlock ./.secret-key
+read -r -p "Enter secret-key in base64: " secret_key
+echo "$secret_key" | base64 -d >./.secret-key
+git-crypt unlock ./.secret-key
 
-  nix-channel --update
-  if [ -z "$1" ]; then
+mv ../nixos.bak/hardware-configuration.nix ./hosts/<name>/hardware-configuration.nix
+mv ../nixos.bak/networking.nix ./hosts/<name>/networking.nix
+
+nix-channel --update
+if [ -z "$1" ]; then
   nixos-rebuild switch --flake .
-  else
+else
   nixos-rebuild switch --flake ".#${1}"
-  fi
+fi
 
-  git config --global --add safe.directory /etc/nixos
-  ' >/tmp/setup.sh
-  chmod +x /tmp/setup.sh
-  nix-channel --update
-  /tmp/setup.sh <name>
-  ```
+git config --global --add safe.directory /etc/nixos
+' >/tmp/setup.sh
+chmod +x /tmp/setup.sh
+nix-channel --update
+/tmp/setup.sh <name>
+```
 
 ## Update
 

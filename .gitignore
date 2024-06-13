@@ -1,1 +1,3 @@
 .secret-key*
+hosts/*/hardware-configuration.nix
+hosts/*/networking.nix
