@@ -12,5 +12,5 @@
     address = [ "2a01:4f8:c013:4993::/64" ];
   };
 
-  system.stateVersion = nixos-version;
+  system.stateVersion = nixos-release;
 }
