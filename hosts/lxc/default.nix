@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  nixos-release,
+  ...
+}:
 
 {
   imports = [

@@ -3,6 +3,7 @@
   pkgs,
   lib,
   dotfiles,
+  nixos-release,
   ...
 }:
 {
