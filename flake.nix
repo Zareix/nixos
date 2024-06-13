@@ -24,8 +24,8 @@
         lxc = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
-            nixos-release = "24.05";
             inherit inputs;
+            nixos-release = "24.05";
           };
           modules = [
             ./hosts/lxc
@@ -42,8 +42,8 @@
         uranus = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
-            nixos-release = "24.05";
             inherit inputs;
+            nixos-release = "24.05";
           };
           modules = [
             ./hosts/uranus
