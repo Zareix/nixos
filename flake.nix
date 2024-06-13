@@ -1,18 +1,20 @@
 {
   description = "A simple NixOS flake";
-  nixos-version = "24.05";
 
-  inputs = {
+  inputs =
+    let
+      nixos-version = "24.05";
+    in
+    {
+      nixpkgs.url = "github:NixOS/nixpkgs/nixos-${nixos-version}";
+      home-manager.url = "github:nix-community/home-manager/release-${nixos-version}";
+      home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-${nixos-version}";
-    home-manager.url = "github:nix-community/home-manager/release-${nixos-version}";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    dotfiles = {
-      url = "github:Zareix/dotfiles";
-      flake = false;
+      dotfiles = {
+        url = "github:Zareix/dotfiles";
+        flake = false;
+      };
     };
-  };
 
   outputs =
     inputs@{
