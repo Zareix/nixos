@@ -23,7 +23,7 @@
       '';
     };
 
-    stateVersion = "24.05";
+    stateVersion = nixos-version;
   };
 
   programs.git = {

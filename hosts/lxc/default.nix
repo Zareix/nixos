@@ -9,5 +9,5 @@
     ../../modules/nfs-client.nix
   ];
 
-  system.stateVersion = "24.05";
+  system.stateVersion = nixos-version;
 }

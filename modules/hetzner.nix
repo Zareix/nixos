@@ -8,7 +8,7 @@
   };
 
   # for Iv6 only: add the following and replace this address with the one assigned to your instance
-  # systemdP.network.networks."10-wan" = {
+  # systemd.network.networks."10-wan" = {
   #   address = [
   #     "2a01:4f8:aaaa:bbbb::1/64"
   #   ];
