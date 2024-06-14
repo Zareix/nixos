@@ -68,6 +68,7 @@ in
     jq
     nano
     nettools
+    openssh
     python3
     rclone
     restic

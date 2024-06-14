@@ -29,7 +29,7 @@ in
 
       # Generate SSH key if not ready
       if [ ! -f "/data/coolify/ssh/keys/id.root@host.docker.internal" ]; then
-        ssh-keygen -f /data/coolify/ssh/keys/id.root@host.docker.internal -t ed25519 -N "" -C root@coolify
+        ${pkgs.openssh}/bin/ssh-keygen -f /data/coolify/ssh/keys/id.root@host.docker.internal -t ed25519 -N "" -C root@coolify
       fi
 
       chown -R 9999:root /data/coolify
