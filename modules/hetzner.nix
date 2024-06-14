@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  modulesPath,
+  ...
+}:
 {
   # Hardware configuration
   imports = [ (modulesPath + "/profiles/qemu-guest.nix") ];
