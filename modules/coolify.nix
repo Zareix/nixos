@@ -1,9 +1,4 @@
 { pkgs, lib, ... }:
-let
-  coolify = {
-    port = 8008;
-  };
-in
 {
   # This line needs to be updated with th value of "/data/coolify/ssh/keys/id.root@host.docker.internal.pub"
   users.users.root.openssh.authorizedKeys.keys = [
@@ -55,7 +50,7 @@ in
   systemd.services.coolify = {
     script = ''
       "${pkgs.docker}/bin/docker" network create --attachable coolify
-      APP_PORT="${toString coolify.port}" "${pkgs.docker}/bin/docker" compose --env-file /data/coolify/source/.env -f /data/coolify/source/docker-compose.yml -f /data/coolify/source/docker-compose.prod.yml up -d --pull always --remove-orphans --force-recreate
+      "${pkgs.docker}/bin/docker" compose --env-file /data/coolify/source/.env -f /data/coolify/source/docker-compose.yml -f /data/coolify/source/docker-compose.prod.yml up -d --pull always --remove-orphans --force-recreate
     '';
     after = [
       "docker.service"
