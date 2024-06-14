@@ -108,5 +108,5 @@ nix-channel --update
 cd /etc/nixos
 sudo nix flake update
 sudo nix-channel --update
-sudo nixos-rebuild switch --flake .#lxc
+sudo nixos-rebuild switch --flake .
 ```

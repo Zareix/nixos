@@ -2,8 +2,8 @@
 
 {
   imports = [
-    ./hardware-configuration.nix
-    ./networking.nix
+    path:./hardware-configuration.nix
+    path:./networking.nix
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
