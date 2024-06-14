@@ -2,8 +2,7 @@
 
 {
   imports = [
-    /etc/nixos/hosts/uranus/hardware-configuration.nix
-    /etc/nixos/hosts/uranus/networking.nix
+    ../../modules/hetzner.nix
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix

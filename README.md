@@ -85,9 +85,6 @@ read -r -p "Enter secret-key in base64: " secret_key
 echo "$secret_key" | base64 -d >./.secret-key
 git-crypt unlock ./.secret-key
 
-mv ../nixos.bak/hardware-configuration.nix ./hosts/<name>/hardware-configuration.nix
-mv ../nixos.bak/networking.nix ./hosts/<name>/networking.nix
-
 nix-channel --update
 if [ -z "$1" ]; then
   nixos-rebuild switch --flake .
