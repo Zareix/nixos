@@ -2,8 +2,8 @@
 
 {
   imports = [
-    "path:/etc/nixos/hosts/uranus/hardware-configuration.nix"
-    "path:/etc/nixos/hosts/uranus/networking.nix"
+    (builtins.toFile /etc/nixos/hosts/uranus/hardware-configuration.nix)
+    (builtins.toFile /etc/nixos/hosts/uranus/networking.nix)
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
