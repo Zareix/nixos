@@ -69,6 +69,7 @@ in
     nano
     nettools
     openssh
+    openssl
     python3
     rclone
     restic
