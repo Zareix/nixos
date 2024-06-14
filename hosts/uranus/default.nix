@@ -6,5 +6,6 @@
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
+    ../../modules/coolify.nix
   ];
 }
