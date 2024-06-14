@@ -8,7 +8,6 @@ in
   services.openssh.settings.PermitRootLogin = "prohibit-password";
   users.users.root.openssh.authorizedKeys.keys = [ ];
 
-  age.secrets.coolify-env.file = ../../secrets/coolify-env-file.age;
   systemd.services.coolify-prepare-files = {
     description = "Setup files for coolify";
     wantedBy = [ "coolify.service" ];
