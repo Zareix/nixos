@@ -5,7 +5,6 @@ let
   };
 in
 {
-  services.openssh.settings.PermitRootLogin = "prohibit-password";
   users.users.root.openssh.authorizedKeys.keys = [ ];
 
   systemd.services.coolify-prepare-files = {
