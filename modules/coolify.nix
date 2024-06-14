@@ -5,7 +5,9 @@ let
   };
 in
 {
-  users.users.root.openssh.authorizedKeys.keys = [ ];
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO2T0IuLyI6x7wiOeMtrl41cw+4HuA6QQwQe86FP4Tl7 root@coolify"
+  ];
 
   systemd.services.coolify-prepare-files = {
     description = "Setup files for coolify";
@@ -49,6 +51,7 @@ in
   };
   systemd.services.coolify = {
     script = ''
+      "${pkgs.docker}/bin/docker" network create --attachable coolify
       APP_PORT="${toString coolify.port}" "${pkgs.docker}/bin/docker" compose --env-file /data/coolify/source/.env -f /data/coolify/source/docker-compose.yml -f /data/coolify/source/docker-compose.prod.yml up -d --pull always --remove-orphans --force-recreate
     '';
     after = [
