@@ -35,7 +35,7 @@
       target = ".config/rclone/rclone.conf";
     };
 
-    stateVersion = "24.05";
+    stateVersion = "23.11";
   };
 
   programs.git = {
