@@ -1,10 +1,11 @@
 { config, pkgs, ... }:
+
 {
   imports = [
-    ../../modules/proxmox.nix
+    ../../modules/hetzner.nix
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
-    ../../modules/nfs-client.nix
+    ../../modules/coolify.nix
   ];
 }

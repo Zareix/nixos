@@ -29,7 +29,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 cd /etc
-mv -r nixos nixos.bak
+mv nixos nixos.bak
 git clone https://github.com/Zareix/nixos
 cd nixos
 
