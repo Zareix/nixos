@@ -2,10 +2,10 @@
 
 {
   imports = [
-    ../../modules/hetzner.nix
+    ../../modules/proxmox.nix
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
-    ../../modules/coolify.nix
+    ../../modules/nfs-client.nix
   ];
 }
