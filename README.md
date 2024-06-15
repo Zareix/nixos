@@ -5,28 +5,12 @@
 ### To deploy in a proxmox lxc container
 
 ```sh
-echo '{ pkgs, modulesPath, ... }:
-{
-  imports = [
-    (modulesPath + "/virtualisation/proxmox-lxc.nix")
-  ];
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
 
-  environment.systemPackages = [
-    pkgs.vim
-  ];
-}' >/etc/nixos/configuration.nix
 nix-channel --update
-nixos-rebuild switch
-
-echo '#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p git git-crypt
-
-set -e
-
-if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
-  exit
-fi
+nix-env -f '<nixpkgs>' -iA git
+nix-env -f '<nixpkgs>' -iA git-crypt
 
 cd /etc
 mv nixos nixos.bak
@@ -45,10 +29,7 @@ else
 fi
 
 git config --global --add safe.directory /etc/nixos
-' >/tmp/setup.sh
-chmod +x /tmp/setup.sh
 nix-channel --update
-/tmp/setup.sh <name>
 ```
 
 ### To deploy on Hetzner

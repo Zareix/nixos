@@ -25,17 +25,17 @@
       '';
     };
 
+    file.zshenv = {
+      source = ../secrets/.zshenv;
+      target = ".zshenv";
+    };
+
+    file.rcloneConfig = {
+      source = ../secrets/rclone.conf;
+      target = ".config/rclone/rclone.conf";
+    };
+
     stateVersion = "24.05";
-  };
-
-  home-manager.users.raphaelgc.home.file.zshenv = {
-    source = ../secrets/.zshenv;
-    target = ".zshenv";
-  };
-
-  home-manager.users.raphaelgc.home.file.rcloneConfig = {
-    source = ../secrets/rclone.conf;
-    target = ".config/rclone/rclone.conf";
   };
 
   programs.git = {
