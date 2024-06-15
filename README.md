@@ -20,16 +20,13 @@ cd nixos
 read -r -p "Enter secret-key in base64: " secret_key
 echo "$secret_key" | base64 -d >./.secret-key
 git-crypt unlock ./.secret-key
+git config --global --add safe.directory /etc/nixos
 
-nix-channel --update
 if [ -z "$1" ]; then
   nixos-rebuild switch --flake .
 else
   nixos-rebuild switch --flake ".#${1}"
 fi
-
-git config --global --add safe.directory /etc/nixos
-nix-channel --update
 ```
 
 ### To deploy on Hetzner
