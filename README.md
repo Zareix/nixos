@@ -22,11 +22,7 @@ echo "$secret_key" | base64 -d >./.secret-key
 git-crypt unlock ./.secret-key
 git config --global --add safe.directory /etc/nixos
 
-if [ -z "$1" ]; then
-  nixos-rebuild switch --flake .
-else
-  nixos-rebuild switch --flake ".#${1}"
-fi
+nixos-rebuild switch --flake .
 ```
 
 ### To deploy on Hetzner
