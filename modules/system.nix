@@ -62,6 +62,7 @@ in
     eza
     fastfetch
     fzf
+    gh
     git
     git-crypt
     gnupg
