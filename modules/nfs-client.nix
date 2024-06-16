@@ -1,10 +1,7 @@
 {
   fileSystems."/mnt/vulcain" = {
-    device = "vulcain.home.local:/mnt/main/share";
+    device = "vulcain.home.local:/";
     fsType = "nfs";
-    options = [
-      "x-systemd.automount"
-      "noauto"
-    ];
+    options = [ "x-systemd.automount" "noauto" ];
   };
 }
