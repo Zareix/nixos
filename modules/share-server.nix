@@ -1,4 +1,9 @@
-{ globals, lib, ... }:
+{
+  globals,
+  lib,
+  config,
+  ...
+}:
 {
   options.shareServer.shareFolder = lib.mkOption { type = lib.types.str; };
 
