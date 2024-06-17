@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  globals,
   dotfiles,
   ...
 }:
@@ -9,8 +10,8 @@
   programs.home-manager.enable = true;
 
   home = {
-    username = "raphaelgc";
-    homeDirectory = "/home/raphaelgc";
+    username = globals.username;
+    homeDirectory = "/home/${globals.username}";
 
     file.dotfiles = {
       source = dotfiles;

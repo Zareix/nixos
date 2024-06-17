@@ -1,10 +1,10 @@
-{ pkgs, lib, ... }:
+{ globals, ... }:
 {
-  users.users.raphaelgc.extraGroups = [ "docker" ];
+  users.users.${globals.username}.extraGroups = [ "docker" ];
 
   virtualisation.docker.enable = true;
 
-  home-manager.users.raphaelgc.home.file.dockerConfig = {
+  home-manager.users.${globals.username}.home.file.dockerConfig = {
     source = ../secrets/docker.json;
     target = ".docker/config.json";
     onChange = ''

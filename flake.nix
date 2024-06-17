@@ -44,7 +44,7 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs;
-              home-manager.users.raphaelgc = import ./home;
+              home-manager.users.${globals.username} = import ./home;
             }
           ];
         };
@@ -66,7 +66,7 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs;
-              home-manager.users.raphaelgc = import ./home;
+              home-manager.users.${globals.username} = import ./home;
             }
           ];
         };
@@ -88,7 +88,7 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs;
-              home-manager.users.raphaelgc = import ./home;
+              home-manager.users.${globals.username} = import ./home;
             }
           ];
         };
@@ -110,7 +110,7 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs;
-              home-manager.users.raphaelgc = import ./home;
+              home-manager.users.${globals.username} = import ./home;
             }
           ];
         };
