@@ -43,7 +43,14 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = inputs;
+              home-manager.extraSpecialArgs = {
+                inherit
+                  inputs
+                  outputs
+                  globals
+                  secrets
+                  ;
+              };
               home-manager.users.${globals.username} = import ./home;
             }
           ];
@@ -65,7 +72,14 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = inputs;
+              home-manager.extraSpecialArgs = {
+                inherit
+                  inputs
+                  outputs
+                  globals
+                  secrets
+                  ;
+              };
               home-manager.users.${globals.username} = import ./home;
             }
           ];
@@ -87,7 +101,14 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = inputs;
+              home-manager.extraSpecialArgs = {
+                inherit
+                  inputs
+                  outputs
+                  globals
+                  secrets
+                  ;
+              };
               home-manager.users.${globals.username} = import ./home;
             }
           ];
@@ -109,7 +130,14 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
 
-              home-manager.extraSpecialArgs = inputs;
+              home-manager.extraSpecialArgs = {
+                inherit
+                  inputs
+                  outputs
+                  globals
+                  secrets
+                  ;
+              };
               home-manager.users.${globals.username} = import ./home;
             }
           ];
