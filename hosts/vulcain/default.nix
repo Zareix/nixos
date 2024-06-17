@@ -8,7 +8,8 @@
     ../../modules/tailscale.nix
     ../../modules/share-server.nix
   ];
-  shareServer.shareFolder = "/mnt/main/share";
+
+  services.shareServer.shareFolder = "/mnt/main/share";
 
   networking.hostName = "vulcain";
 }
