@@ -8,7 +8,7 @@ let
   cfg = config.shareServer;
 in
 {
-  options = {
+  options.shareServer = {
     shareFolder = lib.mkOption { type = lib.types.str; };
   };
 
