@@ -1,9 +1,9 @@
-{ globals, ... }:
+{ globals, config, ... }:
 {
   # NFS
   services.nfs.server.enable = true;
   services.nfs.server.exports = ''
-    /mnt/main/share *(rw,insecure,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000,fsid=0)
+    ${config.shareFolder} *(rw,insecure,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000,fsid=0)
   '';
 
   # SAMBA
@@ -12,8 +12,8 @@
     securityType = "user";
     # openFirewall = true;
     shares = {
-      public = {
-        path = "/mnt/main/share";
+      share = {
+        path = config.shareFolder;
         browseable = "yes";
         "read only" = "no";
         "guest ok" = "no";
