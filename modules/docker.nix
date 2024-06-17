@@ -10,7 +10,7 @@
     onChange = ''
       cp  .docker/config.json .docker/config.json.tmp
       rm -f .docker/config.json
-      mv .docker/config.json.tmp .docker/config.json
+      cp .docker/config.json.tmp .docker/config.json
     '';
   };
 }
