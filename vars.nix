@@ -1,1 +1,1 @@
-{ username = "raphaelgc"; }
+{ username = "raphaelgc"; };
