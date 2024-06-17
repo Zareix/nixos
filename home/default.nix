@@ -3,7 +3,6 @@
   pkgs,
   lib,
   globals,
-  inputs,
   ...
 }:
 {
@@ -14,7 +13,7 @@
     homeDirectory = "/home/${globals.username}";
 
     file.dotfiles = {
-      source = inputs.dotfiles;
+      source = dotfiles;
       recursive = true;
       target = "./.tmp/dotfiles";
       onChange = ''
