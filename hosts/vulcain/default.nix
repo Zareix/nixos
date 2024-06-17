@@ -9,7 +9,7 @@
     ../../modules/share-server.nix
   ];
 
-  services.shareServer.shareFolder = "/mnt/main/share";
+  shareServer.shareFolder = "/mnt/main/share";
 
   networking.hostName = "vulcain";
 }
