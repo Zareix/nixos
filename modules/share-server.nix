@@ -4,13 +4,18 @@
   config,
   ...
 }:
+let
+  cfg = config.shareServer;
+in
 {
-  options.shareServer.shareFolder = lib.mkOption { type = lib.types.str; };
+  options = {
+    shareFolder = lib.mkOption { type = lib.types.str; };
+  };
 
   # NFS
   services.nfs.server.enable = true;
   services.nfs.server.exports = ''
-    ${config.shareServer.shareFolder} *(rw,insecure,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000,fsid=0)
+    ${cfg.shareFolder} *(rw,insecure,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000,fsid=0)
   '';
 
   # SAMBA
@@ -20,7 +25,7 @@
     # openFirewall = true;
     shares = {
       share = {
-        path = config.shareServer.shareFolder;
+        path = cfg.shareFolder;
         browseable = "yes";
         "read only" = "no";
         "guest ok" = "no";
