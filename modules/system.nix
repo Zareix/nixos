@@ -44,7 +44,7 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   networking.firewall.enable = false;
 
-  networking.domain = "home.ts";
+  networking.domain = "zrx.sh";
 
   services.openssh = {
     enable = true;
