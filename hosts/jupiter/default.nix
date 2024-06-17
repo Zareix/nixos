@@ -10,4 +10,5 @@
   ];
 
   networking.hostName = "jupiter";
+  networking.domain = "zrx.sh";
 }
