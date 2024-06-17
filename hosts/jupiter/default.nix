@@ -8,4 +8,6 @@
     ../../modules/tailscale.nix
     ../../modules/nfs-client.nix
   ];
+
+  networking.hostName = "jupiter";
 }

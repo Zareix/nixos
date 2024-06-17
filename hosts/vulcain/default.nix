@@ -8,4 +8,6 @@
     ../../modules/tailscale.nix
     ../../modules/share-server.nix
   ];
+
+  networking.hostName = "vulcain";
 }

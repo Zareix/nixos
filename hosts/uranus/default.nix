@@ -7,4 +7,5 @@
     ../../modules/tailscale.nix
     ../../modules/coolify.nix
   ];
+  networking.hostName = "uranus";
 }
