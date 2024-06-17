@@ -21,13 +21,20 @@
     }@inputs:
     let
       inherit (self) outputs;
+      globals = import ./vars.nix;
+      secrets = import ./secrets/vars.nix;
     in
     {
       nixosConfigurations = {
         lxc = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
-            inherit inputs outputs;
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
           };
           modules = [
             ./hosts/lxc
@@ -44,7 +51,12 @@
         uranus = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
-            inherit inputs outputs;
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
           };
           modules = [
             ./hosts/uranus
@@ -61,10 +73,37 @@
         jupiter = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
-            inherit inputs outputs;
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
           };
           modules = [
             ./hosts/jupiter
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+
+              home-manager.extraSpecialArgs = inputs;
+              home-manager.users.raphaelgc = import ./home;
+            }
+          ];
+        };
+        vulcain = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = {
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
+          };
+          modules = [
+            ./hosts/vulcain
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;

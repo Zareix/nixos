@@ -2,25 +2,25 @@
   pkgs,
   lib,
   modulesPath,
+  globals,
+  secrets,
   ...
 }:
-let
-  username = "raphaelgc";
-in
 {
   system.stateVersion = "24.05";
 
-  users.users.${username} = {
+  users.users.${globals.username} = {
     isNormalUser = true;
-    description = username;
+    description = globals.username;
     extraGroups = [ "wheel" ];
     uid = 1000;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJZwRQQJPlgMKHR2hGm2pI41xEu+Is9QSI966HV6i9uZ raphcatarino@gmail.com"
     ];
     shell = pkgs.zsh;
+    hashedPassword = secrets.hashedPassword;
   };
-  nix.settings.trusted-users = [ username ];
+  nix.settings.trusted-users = [ globals.username ];
 
   nix.settings = {
     experimental-features = [
