@@ -6,8 +6,9 @@
     ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
-    (import ../../modules/share-server.nix { shareFolder = "/mnt/main/share"; })
+    ../../modules/share-server.nix
   ];
 
   networking.hostName = "vulcain";
+  shareServer.shareFolder = "/mnt/main/share";
 }
