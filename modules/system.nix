@@ -1,12 +1,4 @@
-{
-  pkgs,
-  lib,
-  modulesPath,
-  globals,
-  secrets,
-  ...
-}:
-{
+{ pkgs, lib, modulesPath, globals, secrets, ... }: {
   system.stateVersion = "24.05";
 
   users.users.${globals.username} = {
@@ -22,12 +14,7 @@
   };
   nix.settings.trusted-users = [ globals.username ];
 
-  nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-  };
+  nix.settings = { experimental-features = [ "nix-command" "flakes" ]; };
 
   nix.gc = {
     automatic = lib.mkDefault true;
@@ -61,6 +48,7 @@
     bat
     bun
     curl
+    direnv
     eza
     fastfetch
     fzf
@@ -71,6 +59,7 @@
     jq
     nano
     nettools
+    nixfmt-classic
     openssh
     openssl
     rclone
