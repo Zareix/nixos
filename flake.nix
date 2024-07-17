@@ -50,6 +50,7 @@
               };
               home-manager.users.${globals.username} = import ./home;
             }
+            vscode-server.nixosModules.default
           ];
         };
         uranus = nixpkgs.lib.nixosSystem {
@@ -74,6 +75,7 @@
               };
               home-manager.users.${globals.username} = import ./home;
             }
+            vscode-server.nixosModules.default
           ];
         };
         jupiter = nixpkgs.lib.nixosSystem {
@@ -123,6 +125,7 @@
               };
               home-manager.users.${globals.username} = import ./home;
             }
+            vscode-server.nixosModules.default
           ];
         };
       };
