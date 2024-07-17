@@ -4,9 +4,12 @@
   modulesPath,
   globals,
   secrets,
+  vscode-server,
   ...
 }:
 {
+  imports = [ vscode-server.nixosModules.default ];
+
   system.stateVersion = "24.05";
 
   users.users.${globals.username} = {
@@ -54,6 +57,8 @@
     openFirewall = true;
   };
   security.sudo.wheelNeedsPassword = false;
+
+  services.vscode-server.enable = true;
 
   environment.systemPackages = with pkgs; [
     bat
