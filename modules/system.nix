@@ -55,6 +55,8 @@
   };
   security.sudo.wheelNeedsPassword = false;
 
+  services.vscode-server.enable = true;
+
   environment.systemPackages = with pkgs; [
     bat
     bun

@@ -8,18 +8,6 @@
 }:
 {
   programs.home-manager.enable = true;
-  imports = [
-    "${
-      pkgs.fetchFromGitHub {
-        owner = "msteen";
-        repo = "nixos-vscode-server";
-        rev = "master";
-        hash = lib.fakeHash;
-      }
-    }/modules/vscode-server/home.nix"
-  ];
-
-  services.vscode-server.enable = true;
 
   home = {
     username = globals.username;

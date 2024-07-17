@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     home-manager.url = "github:nix-community/home-manager/release-24.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    vscode-server.url = "github:nix-community/nixos-vscode-server";
 
     dotfiles = {
       url = "github:Zareix/dotfiles";
@@ -17,6 +18,7 @@
       self,
       nixpkgs,
       home-manager,
+      vscode-server,
       ...
     }@inputs:
     let
@@ -96,6 +98,7 @@
               };
               home-manager.users.${globals.username} = import ./home;
             }
+            vscode-server.nixosModules.default
           ];
         };
         vulcain = nixpkgs.lib.nixosSystem {
