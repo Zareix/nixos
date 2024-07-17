@@ -18,6 +18,7 @@
       self,
       nixpkgs,
       home-manager,
+      vscode-server,
       ...
     }@inputs:
     let
@@ -86,6 +87,7 @@
               ;
           };
           modules = [
+            vscode-server.nixosModules.default
             ./hosts/jupiter
             home-manager.nixosModules.home-manager
             {

@@ -4,12 +4,9 @@
   modulesPath,
   globals,
   secrets,
-  vscode-server,
   ...
 }:
 {
-  imports = [ vscode-server.nixosModules.default ];
-
   system.stateVersion = "24.05";
 
   users.users.${globals.username} = {
