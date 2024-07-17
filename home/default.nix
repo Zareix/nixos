@@ -37,7 +37,12 @@
     };
 
     imports = [
-      "${fetchTarball "https://github.com/msteen/nixos-vscode-server/tarball/master"}/modules/vscode-server/home.nix"
+      "${
+        fetchTarball {
+          url = "https://github.com/msteen/nixos-vscode-server/tarball/master";
+          sha256 = "sha256:fc900c16efc6a5ed972fb6be87df018bcf3035bc";
+        }
+      }/modules/vscode-server/home.nix"
     ];
 
     services.vscode-server.enable = true;
