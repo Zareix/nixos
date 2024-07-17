@@ -4,6 +4,7 @@
   lib,
   globals,
   dotfiles,
+  fetchFromGitHub,
   ...
 }:
 {
@@ -38,11 +39,11 @@
 
     imports = [
       "${
-        lib.fetchFromGitHub {
+        fetchFromGitHub {
           owner = "msteen";
           repo = "nixos-vscode-server";
           rev = "master";
-          hash = "sha256:fc900c16efc6a5ed972fb6be87df018bcf3035bc";
+          hash = lib.fakeHash;
         }
       }/modules/vscode-server/home.nix"
     ];
