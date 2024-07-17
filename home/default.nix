@@ -38,7 +38,7 @@
 
     imports = [
       "${
-        fetchFromGitHub {
+        lib.fetchFromGitHub {
           owner = "msteen";
           repo = "nixos-vscode-server";
           rev = "master";
