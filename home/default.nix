@@ -4,7 +4,7 @@
   lib,
   globals,
   dotfiles,
-  fetchFromGitHub,
+  fetchFromGithub,
   ...
 }:
 {
@@ -39,7 +39,7 @@
 
     imports = [
       "${
-        fetchFromGitHub {
+        fetchFromGithub {
           owner = "msteen";
           repo = "nixos-vscode-server";
           rev = "master";
