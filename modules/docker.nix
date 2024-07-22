@@ -1,8 +1,8 @@
-{ globals, ... }:
-{
+{ globals, pkgs, ... }: {
   users.users.${globals.username}.extraGroups = [ "docker" ];
 
   virtualisation.docker.enable = true;
+  virtualisation.docker.package = pkgs.docker_27;
 
   home-manager.users.${globals.username}.home.file.dockerConfig = {
     source = ../secrets/docker.json;
