@@ -14,18 +14,60 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager
-    , vscode-server, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      nixpkgs-unstable,
+      home-manager,
+      vscode-server,
+      ...
+    }:
     let
       inherit (self) outputs;
       globals = import ./vars.nix;
       secrets = import ./secrets/vars.nix;
-    in {
+    in
+    {
       nixosConfigurations = {
+        default = nixpkgs.lib.nixosSystem rec {
+          system = "x86_64-linux";
+          specialArgs = {
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
+            pkgs-unstable = import nixpkgs-unstable {
+              inherit system;
+              config.allowUnfree = true;
+            };
+          };
+          modules = [
+            ./hosts/default
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+
+              home-manager.extraSpecialArgs = inputs // {
+                inherit outputs globals secrets;
+              };
+              home-manager.users.${globals.username} = import ./home;
+            }
+            vscode-server.nixosModules.default
+          ];
+        };
         jupiter = nixpkgs.lib.nixosSystem rec {
           system = "x86_64-linux";
           specialArgs = {
-            inherit inputs outputs globals secrets;
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
             pkgs-unstable = import nixpkgs-unstable {
               inherit system;
               config.allowUnfree = true;
@@ -49,7 +91,12 @@
         uranus = nixpkgs.lib.nixosSystem rec {
           system = "x86_64-linux";
           specialArgs = {
-            inherit inputs outputs globals secrets;
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
             pkgs-unstable = import nixpkgs-unstable {
               inherit system;
               config.allowUnfree = true;
@@ -72,7 +119,12 @@
         vulcain = nixpkgs.lib.nixosSystem rec {
           system = "x86_64-linux";
           specialArgs = {
-            inherit inputs outputs globals secrets;
+            inherit
+              inputs
+              outputs
+              globals
+              secrets
+              ;
             pkgs-unstable = import nixpkgs-unstable {
               inherit system;
               config.allowUnfree = true;
