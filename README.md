@@ -75,9 +75,23 @@ nix-channel --update
 
 ## Update
 
+On the first machine :
+
 ```sh
 cd /etc/nixos
 sudo nix flake update
+sudo nix-channel --update
+sudo nixos-rebuild switch --flake .
+sudo git add .
+sudo git commit -m "update"
+sudo git push
+```
+
+On the others machine :
+
+```sh
+cd /etc/nixos
+sudo git pull
 sudo nix-channel --update
 sudo nixos-rebuild switch --flake .
 ```
