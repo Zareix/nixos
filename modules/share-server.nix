@@ -16,7 +16,7 @@ in
     # NFS
     services.nfs.server.enable = true;
     services.nfs.server.exports = ''
-      ${cfg.shareFolder} *(rw,insecure,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000,fsid=0)
+      ${cfg.shareFolder} *(rw,insecure,async,no_subtree_check,all_squash,anonuid=1000,anongid=1000,fsid=0)
     '';
 
     # SAMBA
