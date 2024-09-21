@@ -1,10 +1,14 @@
 { pkgs, lib, modulesPath, globals, secrets, ... }: {
   system.stateVersion = "24.05";
 
+  users.groups.${globals.username} = {
+    name = globals.username;
+    gid = 1000;
+  };
   users.users.${globals.username} = {
     isNormalUser = true;
     description = globals.username;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" globals.username ];
     uid = 1000;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJZwRQQJPlgMKHR2hGm2pI41xEu+Is9QSI966HV6i9uZ raphcatarino@gmail.com"
