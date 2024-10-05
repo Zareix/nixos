@@ -52,15 +52,22 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit
-                  outputs
-                  globals
-                  secrets
-                  inputs
-                  ;
+                inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
-              home-manager.users.root = (import ./home { username = "root"; });
+              home-manager.users = {
+                ${globals.username} = {
+                  imports = [
+                    ./home
+                    ./home/${globals.username}.nix
+                  ];
+                };
+                root = {
+                  imports = [
+                    ./home
+                    ./home/root.nix
+                  ];
+                };
+              };
             }
             vscode-server.nixosModules.default
           ];
@@ -87,15 +94,22 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit
-                  outputs
-                  globals
-                  secrets
-                  inputs
-                  ;
+                inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
-              home-manager.users.root = (import ./home { username = "root"; });
+              home-manager.users = {
+                ${globals.username} = {
+                  imports = [
+                    ./home
+                    ./home/${globals.username}.nix
+                  ];
+                };
+                root = {
+                  imports = [
+                    ./home
+                    ./home/root.nix
+                  ];
+                };
+              };
             }
             vscode-server.nixosModules.default
           ];
@@ -122,15 +136,22 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit
-                  outputs
-                  globals
-                  secrets
-                  inputs
-                  ;
+                inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
-              home-manager.users.root = (import ./home { username = "root"; });
+              home-manager.users = {
+                ${globals.username} = {
+                  imports = [
+                    ./home
+                    ./home/${globals.username}.nix
+                  ];
+                };
+                root = {
+                  imports = [
+                    ./home
+                    ./home/root.nix
+                  ];
+                };
+              };
             }
           ];
         };
@@ -156,15 +177,22 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit
-                  outputs
-                  globals
-                  secrets
-                  inputs
-                  ;
+                inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
-              home-manager.users.root = (import ./home { username = "root"; });
+              home-manager.users = {
+                ${globals.username} = {
+                  imports = [
+                    ./home
+                    ./home/${globals.username}.nix
+                  ];
+                };
+                root = {
+                  imports = [
+                    ./home
+                    ./home/root.nix
+                  ];
+                };
+              };
             }
             vscode-server.nixosModules.default
           ];
