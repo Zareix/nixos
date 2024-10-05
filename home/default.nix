@@ -3,7 +3,7 @@
   pkgs,
   lib,
   dotfiles,
-  username
+  username,
   ...
 }:
 {
