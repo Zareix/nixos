@@ -1,7 +1,7 @@
-{ username, ... }:
+{ globals, ... }:
 {
   home = {
-    username = username;
-    homeDirectory = "/home/${username}";
+    username = globals.username;
+    homeDirectory = "/home/${globals.username}";
   };
 }
