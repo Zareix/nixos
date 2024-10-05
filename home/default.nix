@@ -1,15 +1,8 @@
-{
-  pkgs,
-  dotfiles,
-  username,
-  ...
-}:
+{ pkgs, dotfiles, ... }:
 {
   programs.home-manager.enable = true;
 
   home = {
-    username = username;
-    homeDirectory = if username == "root" then "/root" else "/home/${username}";
 
     file.dotfiles = {
       source = dotfiles;
