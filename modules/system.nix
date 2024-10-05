@@ -1,4 +1,12 @@
-{ pkgs, lib, modulesPath, globals, secrets, ... }: {
+{
+  pkgs,
+  lib,
+  modulesPath,
+  globals,
+  secrets,
+  ...
+}:
+{
   system.stateVersion = "24.05";
 
   users.groups.${globals.username} = {
@@ -18,7 +26,12 @@
   };
   nix.settings.trusted-users = [ globals.username ];
 
-  nix.settings = { experimental-features = [ "nix-command" "flakes" ]; };
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+  };
 
   nix.gc = {
     automatic = lib.mkDefault true;

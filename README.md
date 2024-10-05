@@ -4,6 +4,23 @@
 
 ### To deploy in a proxmox lxc container
 
+- Create a new privileged container with nesting enabled.
+- In proxmox edit file `/etc/pve/lxc/<lxc-id>.conf` and add following lines for Tailscale :
+
+```plain
+lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```
+
+- Optionally, add following lines for GPU passthrough :
+
+```plain
+lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+lxc.mount.entry: /dev/dri/renderD128 dev/renderD128 none bind,optional,create=file
+```
+
+- Then open a shell in the container and run following commands :
+
 ```sh
 mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
@@ -37,18 +54,16 @@ runcmd:
   - curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | PROVIDER=hetznercloud NIX_CHANNEL=nixos-24.05 bash 2>&1 | tee /tmp/infect.log
 ```
 
-- Replace `<name>` by the hostname, then run following commands :
+- Wait a few minutes for nixos-infect to finish
+- Then ssh to the server and run following commands :
 
 ```sh
-echo '#! /usr/bin/env nix-shell
-#! nix-shell -i bash -p git git-crypt
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
 
-set -e
-
-if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
-  exit
-fi
+nix-channel --update
+nix-env -f '<nixpkgs>' -iA git
+nix-env -f '<nixpkgs>' -iA git-crypt
 
 cd /etc
 mv nixos nixos.bak
@@ -58,19 +73,9 @@ cd nixos
 read -r -p "Enter secret-key in base64: " secret_key
 echo "$secret_key" | base64 -d >./.secret-key
 git-crypt unlock ./.secret-key
-
-nix-channel --update
-if [ -z "$1" ]; then
-  nixos-rebuild switch --flake .
-else
-  nixos-rebuild switch --flake ".#${1}"
-fi
-
 git config --global --add safe.directory /etc/nixos
-' >/tmp/setup.sh
-chmod +x /tmp/setup.sh
-nix-channel --update
-/tmp/setup.sh <name>
+
+nixos-rebuild switch --flake .
 ```
 
 ## Update
@@ -87,7 +92,7 @@ sudo git commit -m "update"
 sudo git push
 ```
 
-On the others machine :
+On other machines :
 
 ```sh
 cd /etc/nixos
