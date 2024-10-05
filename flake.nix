@@ -56,7 +56,7 @@
                   outputs
                   globals
                   secrets
-                  dotfiles
+                  inputs
                   ;
               };
               home-manager.users.${globals.username} = (import ./home { username = globals.username; });
@@ -91,7 +91,7 @@
                   outputs
                   globals
                   secrets
-                  dotfiles
+                  inputs
                   ;
               };
               home-manager.users.${globals.username} = (import ./home { username = globals.username; });
@@ -126,7 +126,7 @@
                   outputs
                   globals
                   secrets
-                  dotfiles
+                  inputs
                   ;
               };
               home-manager.users.${globals.username} = (import ./home { username = globals.username; });
@@ -160,7 +160,7 @@
                   outputs
                   globals
                   secrets
-                  dotfiles
+                  inputs
                   ;
               };
               home-manager.users.${globals.username} = (import ./home { username = globals.username; });
