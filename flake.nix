@@ -52,20 +52,15 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit outputs globals secrets;
+                inherit
+                  outputs
+                  globals
+                  secrets
+                  dotfiles
+                  ;
               };
-              home-manager.users.${globals.username} = (
-                import ./home {
-                  username = globals.username;
-                  inherit outputs globals secrets;
-                }
-              );
-              home-manager.users.root = (
-                import ./home {
-                  username = "root";
-                  inherit outputs globals secrets;
-                }
-              );
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
             vscode-server.nixosModules.default
           ];
@@ -92,20 +87,15 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit outputs globals secrets;
+                inherit
+                  outputs
+                  globals
+                  secrets
+                  dotfiles
+                  ;
               };
-              home-manager.users.${globals.username} = (
-                import ./home {
-                  username = globals.username;
-                  inherit outputs globals secrets;
-                }
-              );
-              home-manager.users.root = (
-                import ./home {
-                  username = "root";
-                  inherit outputs globals secrets;
-                }
-              );
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
             vscode-server.nixosModules.default
           ];
@@ -132,20 +122,15 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit outputs globals secrets;
+                inherit
+                  outputs
+                  globals
+                  secrets
+                  dotfiles
+                  ;
               };
-              home-manager.users.${globals.username} = (
-                import ./home {
-                  username = globals.username;
-                  inherit outputs globals secrets;
-                }
-              );
-              home-manager.users.root = (
-                import ./home {
-                  username = "root";
-                  inherit outputs globals secrets;
-                }
-              );
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
           ];
         };
@@ -171,20 +156,15 @@
               home-manager.useUserPackages = true;
 
               home-manager.extraSpecialArgs = inputs // {
-                inherit outputs globals secrets;
+                inherit
+                  outputs
+                  globals
+                  secrets
+                  dotfiles
+                  ;
               };
-              home-manager.users.${globals.username} = (
-                import ./home {
-                  username = globals.username;
-                  inherit outputs globals secrets;
-                }
-              );
-              home-manager.users.root = (
-                import ./home {
-                  username = "root";
-                  inherit outputs globals secrets;
-                }
-              );
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
             vscode-server.nixosModules.default
           ];
