@@ -54,7 +54,8 @@
               home-manager.extraSpecialArgs = inputs // {
                 inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = import ./home;
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
             vscode-server.nixosModules.default
           ];
@@ -83,7 +84,8 @@
               home-manager.extraSpecialArgs = inputs // {
                 inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = import ./home;
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
             vscode-server.nixosModules.default
           ];
@@ -112,7 +114,8 @@
               home-manager.extraSpecialArgs = inputs // {
                 inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = import ./home;
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
           ];
         };
@@ -140,7 +143,8 @@
               home-manager.extraSpecialArgs = inputs // {
                 inherit outputs globals secrets;
               };
-              home-manager.users.${globals.username} = import ./home;
+              home-manager.users.${globals.username} = (import ./home { username = globals.username; });
+              home-manager.users.root = (import ./home { username = "root"; });
             }
             vscode-server.nixosModules.default
           ];

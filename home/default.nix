@@ -2,16 +2,16 @@
   config,
   pkgs,
   lib,
-  globals,
   dotfiles,
+  username
   ...
 }:
 {
   programs.home-manager.enable = true;
 
   home = {
-    username = globals.username;
-    homeDirectory = "/home/${globals.username}";
+    username = username;
+    homeDirectory = username == "root" ? "/root" : "/home/${username}";
 
     file.dotfiles = {
       source = dotfiles;
@@ -37,10 +37,5 @@
     };
 
     stateVersion = "23.11";
-  };
-
-  programs.git = {
-    userName = "Zareix";
-    userEmail = "raphcatarino@gmail.com";
   };
 }
