@@ -11,7 +11,7 @@
 
   home = {
     username = username;
-    homeDirectory = username == "root" ? "/root" : "/home/${username}";
+    homeDirectory = if username == "root" then "/root" else "/home/${username}";
 
     file.dotfiles = {
       source = dotfiles;
