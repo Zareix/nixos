@@ -14,189 +14,194 @@
     };
   };
 
-  outputs =
-    inputs@{
-      self,
-      nixpkgs,
-      nixpkgs-unstable,
-      home-manager,
-      vscode-server,
-      ...
-    }:
-    let
-      inherit (self) outputs;
-      globals = import ./vars.nix;
-      secrets = import ./secrets/vars.nix;
-    in
-    {
-      nixosConfigurations = {
-        default = nixpkgs.lib.nixosSystem rec {
-          system = "x86_64-linux";
-          specialArgs = {
-            inherit
-              inputs
-              outputs
-              globals
-              secrets
-              ;
-            pkgs-unstable = import nixpkgs-unstable {
-              inherit system;
-              config.allowUnfree = true;
-            };
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    nixpkgs-unstable,
+    home-manager,
+    vscode-server,
+    ...
+  }: let
+    inherit (self) outputs;
+    globals = import ./vars.nix;
+    secrets = import ./secrets/vars.nix;
+  in {
+    nixosConfigurations = {
+      default = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+        specialArgs = {
+          inherit
+            inputs
+            outputs
+            globals
+            secrets
+            ;
+          pkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
           };
-          modules = [
-            ./hosts/default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-
-              home-manager.extraSpecialArgs = inputs // {
+        };
+        modules = [
+          ./hosts/default
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
                 inherit outputs globals secrets;
               };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
               };
-            }
-            vscode-server.nixosModules.default
-          ];
-        };
-        jupiter = nixpkgs.lib.nixosSystem rec {
-          system = "x86_64-linux";
-          specialArgs = {
-            inherit
-              inputs
-              outputs
-              globals
-              secrets
-              ;
-            pkgs-unstable = import nixpkgs-unstable {
-              inherit system;
-              config.allowUnfree = true;
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
             };
+          }
+          vscode-server.nixosModules.default
+        ];
+      };
+      jupiter = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+        specialArgs = {
+          inherit
+            inputs
+            outputs
+            globals
+            secrets
+            ;
+          pkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
           };
-          modules = [
-            ./hosts/jupiter
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-
-              home-manager.extraSpecialArgs = inputs // {
+        };
+        modules = [
+          ./hosts/jupiter
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
                 inherit outputs globals secrets;
               };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
               };
-            }
-            vscode-server.nixosModules.default
-          ];
-        };
-        uranus = nixpkgs.lib.nixosSystem rec {
-          system = "x86_64-linux";
-          specialArgs = {
-            inherit
-              inputs
-              outputs
-              globals
-              secrets
-              ;
-            pkgs-unstable = import nixpkgs-unstable {
-              inherit system;
-              config.allowUnfree = true;
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
             };
+          }
+          vscode-server.nixosModules.default
+        ];
+      };
+      uranus = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+        specialArgs = {
+          inherit
+            inputs
+            outputs
+            globals
+            secrets
+            ;
+          pkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
           };
-          modules = [
-            ./hosts/uranus
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-
-              home-manager.extraSpecialArgs = inputs // {
+        };
+        modules = [
+          ./hosts/uranus
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
                 inherit outputs globals secrets;
               };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
               };
-            }
-          ];
-        };
-        vulcain = nixpkgs.lib.nixosSystem rec {
-          system = "x86_64-linux";
-          specialArgs = {
-            inherit
-              inputs
-              outputs
-              globals
-              secrets
-              ;
-            pkgs-unstable = import nixpkgs-unstable {
-              inherit system;
-              config.allowUnfree = true;
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
             };
+          }
+        ];
+      };
+      vulcain = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+        specialArgs = {
+          inherit
+            inputs
+            outputs
+            globals
+            secrets
+            ;
+          pkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
           };
-          modules = [
-            ./hosts/vulcain
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-
-              home-manager.extraSpecialArgs = inputs // {
+        };
+        modules = [
+          ./hosts/vulcain
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
                 inherit outputs globals secrets;
               };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
               };
-            }
-            vscode-server.nixosModules.default
-          ];
-        };
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
+            };
+          }
+          vscode-server.nixosModules.default
+        ];
       };
     };
+  };
 }

@@ -5,8 +5,7 @@
   globals,
   secrets,
   ...
-}:
-{
+}: {
   system.stateVersion = "24.05";
 
   users.groups.${globals.username} = {
@@ -43,6 +42,8 @@
 
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
+
+  networking.firewall.enable = false;
 
   services.openssh = {
     enable = true;

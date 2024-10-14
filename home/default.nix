@@ -1,9 +1,11 @@
-{ pkgs, dotfiles, ... }:
 {
+  pkgs,
+  dotfiles,
+  ...
+}: {
   programs.home-manager.enable = true;
 
   home = {
-
     file.dotfiles = {
       source = dotfiles;
       recursive = true;
@@ -14,6 +16,17 @@
         rm -rf ./.tmp/dotfiles
         cd ./dotfiles
         ${pkgs.stow}/bin/stow --adopt git nano fastfetch powerline10k zsh linux
+      '';
+    };
+
+    file.dockerConfig = {
+      source = ../secrets/docker.json;
+      target = "./.tmp/.docker/config.json";
+      onChange = ''
+        mkdir -p ./.docker
+        rm -rf ./.docker/config.json
+        cp -rL ./.tmp/.docker/config.json ./.docker/config.json
+        rm -rf ./.tmp/.docker/config.json
       '';
     };
 
