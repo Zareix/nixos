@@ -1,3 +1,4 @@
 {
-  "config.workspaceKeybindings.saveAsRoot": "enabled"
+  "config.workspaceKeybindings.saveAsRoot": "enabled",
+  "git.enabled": false
 }

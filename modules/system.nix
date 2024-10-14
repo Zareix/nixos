@@ -16,7 +16,7 @@
   users.users.${globals.username} = {
     isNormalUser = true;
     description = globals.username;
-    extraGroups = [ "wheel" globals.username ];
+    extraGroups = ["wheel" globals.username];
     uid = 1000;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJZwRQQJPlgMKHR2hGm2pI41xEu+Is9QSI966HV6i9uZ raphcatarino@gmail.com"
@@ -24,7 +24,7 @@
     shell = pkgs.zsh;
     hashedPassword = secrets.hashedPassword;
   };
-  nix.settings.trusted-users = [ globals.username ];
+  nix.settings.trusted-users = [globals.username];
 
   nix.settings = {
     experimental-features = [
@@ -44,10 +44,6 @@
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # networking.firewall.allowedTCPPorts = [ 22 ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  networking.firewall.enable = false;
-
   services.openssh = {
     enable = true;
     settings = {
@@ -62,6 +58,7 @@
   services.vscode-server.enable = true;
 
   environment.systemPackages = with pkgs; [
+    alejandra
     bat
     bun
     curl
@@ -88,7 +85,7 @@
     zoxide
     zsh
 
-    (pkgs.python3.withPackages (python-pkgs: [ python-pkgs.requests ]))
+    (pkgs.python3.withPackages (python-pkgs: [python-pkgs.requests]))
   ];
   programs.zsh.enable = true;
 }
