@@ -73,6 +73,7 @@
     gnupg
     jq
     nano
+    ncdu
     nettools
     nixfmt-classic
     openssh
