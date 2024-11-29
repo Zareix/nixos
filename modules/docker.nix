@@ -12,6 +12,6 @@
     enable = true;
     path = "/data/stacks";
     remote = "https://github.com/Zareix/docker.git";
-    user = "[Gitwatch] Zareix";
+    user = "raphaelgc";
   };
 }
