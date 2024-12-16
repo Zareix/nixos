@@ -44,6 +44,7 @@ nixos-rebuild switch --flake .
 
 ### To deploy on Hetzner
 
+- We'll use [nixos-infect](https://github.com/elitak/nixos-infect)
 - First boot with server using a default OS like Ubuntu 22.04
 - Then add the following to cloud-init
 
@@ -84,6 +85,7 @@ On the first machine :
 
 ```sh
 cd /etc/nixos
+sudo git pull
 sudo nix flake update
 sudo nix-channel --update
 sudo nixos-rebuild switch --flake .
