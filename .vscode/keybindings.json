@@ -1,0 +1,8 @@
+[{
+  "key": "cmd+s",
+  "command": "save-as-root.saveFile"
+},
+{
+  "key": "ctrl+s",
+  "command": "workbench.action.files.save"
+}]

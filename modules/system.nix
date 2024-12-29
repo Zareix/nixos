@@ -90,4 +90,8 @@
     (pkgs.python3.withPackages (python-pkgs: [python-pkgs.requests]))
   ];
   programs.zsh.enable = true;
+  programs.tmux = {
+    enable = true;
+    clock24 = true;
+  }
 }
