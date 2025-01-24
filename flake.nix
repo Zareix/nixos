@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    home-manager.url = "github:nix-community/home-manager/release-24.05";
+    home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     vscode-server.url = "github:nix-community/nixos-vscode-server";
     gitwatch.url = "github:gitwatch/gitwatch";
@@ -21,7 +21,6 @@
     nixpkgs-unstable,
     home-manager,
     vscode-server,
-    gitwatch,
     ...
   }: let
     inherit (self) outputs;
@@ -43,37 +42,35 @@
             config.allowUnfree = true;
           };
         };
-        modules =
-          [
-            ./hosts/default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "ha-bak";
-              home-manager.extraSpecialArgs =
-                inputs
-                // {
-                  inherit outputs globals secrets;
-                };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+        modules = [
+          ./hosts/default
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
+                inherit outputs globals secrets;
               };
-            }
-            vscode-server.nixosModules.default
-          ]
-          ++ gitwatch.modules;
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
+              };
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
+            };
+          }
+          vscode-server.nixosModules.default
+        ];
       };
       jupiter = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
@@ -89,37 +86,35 @@
             config.allowUnfree = true;
           };
         };
-        modules =
-          [
-            ./hosts/jupiter
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "ha-bak";
-              home-manager.extraSpecialArgs =
-                inputs
-                // {
-                  inherit outputs globals secrets;
-                };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+        modules = [
+          ./hosts/jupiter
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
+                inherit outputs globals secrets;
               };
-            }
-            vscode-server.nixosModules.default
-          ]
-          ++ gitwatch.modules;
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
+              };
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
+            };
+          }
+          vscode-server.nixosModules.default
+        ];
       };
       uranus = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
@@ -178,37 +173,35 @@
             config.allowUnfree = true;
           };
         };
-        modules =
-          [
-            ./hosts/vulcain
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "ha-bak";
-              home-manager.extraSpecialArgs =
-                inputs
-                // {
-                  inherit outputs globals secrets;
-                };
-              home-manager.users = {
-                ${globals.username} = {
-                  imports = [
-                    ./home
-                    ./home/${globals.username}.nix
-                  ];
-                };
-                root = {
-                  imports = [
-                    ./home
-                    ./home/root.nix
-                  ];
-                };
+        modules = [
+          ./hosts/vulcain
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "ha-bak";
+            home-manager.extraSpecialArgs =
+              inputs
+              // {
+                inherit outputs globals secrets;
               };
-            }
-            vscode-server.nixosModules.default
-          ]
-          ++ gitwatch.modules;
+            home-manager.users = {
+              ${globals.username} = {
+                imports = [
+                  ./home
+                  ./home/${globals.username}.nix
+                ];
+              };
+              root = {
+                imports = [
+                  ./home
+                  ./home/root.nix
+                ];
+              };
+            };
+          }
+          vscode-server.nixosModules.default
+        ];
       };
     };
   };
