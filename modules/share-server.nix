@@ -3,13 +3,11 @@
   lib,
   config,
   ...
-}:
-let
+}: let
   cfg = config.shareServer;
-in
-{
+in {
   options.shareServer = {
-    shareFolder = lib.mkOption { type = lib.types.str; };
+    shareFolder = lib.mkOption {type = lib.types.str;};
   };
 
   config = {
@@ -27,8 +25,12 @@ in
     # SAMBA
     services.samba = {
       enable = true;
-      securityType = "user";
-      shares = {
+      settings = {
+        global = {
+          "security" = "user";
+          "hosts allow" = "192.168.31. 100.64.0.0/255.192.0.0 127.0.0.1 localhost";
+          "hosts deny" = "0.0.0.0/0";
+        };
         share = {
           path = cfg.shareFolder;
           browseable = "yes";
