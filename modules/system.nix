@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  modulesPath,
   globals,
   secrets,
   ...
@@ -35,7 +34,7 @@
   nix.gc = {
     automatic = lib.mkDefault true;
     dates = lib.mkDefault "weekly";
-    options = lib.mkDefault "--delete-older-than 7d";
+    options = lib.mkDefault "--delete-older-than 14d";
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -61,6 +60,7 @@
   environment.systemPackages = with pkgs; [
     alejandra
     bat
+    btop
     bun
     curl
     direnv

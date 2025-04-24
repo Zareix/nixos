@@ -23,7 +23,6 @@
     vscode-server,
     ...
   }: let
-    inherit (self) outputs;
     globals = import ./vars.nix;
     secrets = import ./secrets/vars.nix;
   in {
@@ -33,7 +32,6 @@
         specialArgs = {
           inherit
             inputs
-            outputs
             globals
             secrets
             ;
@@ -46,28 +44,7 @@
           ./hosts/default
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "ha-bak";
-            home-manager.extraSpecialArgs =
-              inputs
-              // {
-                inherit outputs globals secrets;
-              };
-            home-manager.users = {
-              ${globals.username} = {
-                imports = [
-                  ./home
-                  ./home/${globals.username}.nix
-                ];
-              };
-              root = {
-                imports = [
-                  ./home
-                  ./home/root.nix
-                ];
-              };
-            };
+            home-manager.extraSpecialArgs = specialArgs;
           }
           vscode-server.nixosModules.default
         ];
@@ -77,7 +54,6 @@
         specialArgs = {
           inherit
             inputs
-            outputs
             globals
             secrets
             ;
@@ -90,73 +66,9 @@
           ./hosts/jupiter
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "ha-bak";
-            home-manager.extraSpecialArgs =
-              inputs
-              // {
-                inherit outputs globals secrets;
-              };
-            home-manager.users = {
-              ${globals.username} = {
-                imports = [
-                  ./home
-                  ./home/${globals.username}.nix
-                ];
-              };
-              root = {
-                imports = [
-                  ./home
-                  ./home/root.nix
-                ];
-              };
-            };
+            home-manager.extraSpecialArgs = specialArgs;
           }
           vscode-server.nixosModules.default
-        ];
-      };
-      uranus = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit
-            inputs
-            outputs
-            globals
-            secrets
-            ;
-          pkgs-unstable = import nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-        };
-        modules = [
-          ./hosts/uranus
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "ha-bak";
-            home-manager.extraSpecialArgs =
-              inputs
-              // {
-                inherit outputs globals secrets;
-              };
-            home-manager.users = {
-              ${globals.username} = {
-                imports = [
-                  ./home
-                  ./home/${globals.username}.nix
-                ];
-              };
-              root = {
-                imports = [
-                  ./home
-                  ./home/root.nix
-                ];
-              };
-            };
-          }
         ];
       };
       vulcain = nixpkgs.lib.nixosSystem rec {
@@ -164,7 +76,6 @@
         specialArgs = {
           inherit
             inputs
-            outputs
             globals
             secrets
             ;
@@ -177,28 +88,7 @@
           ./hosts/vulcain
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "ha-bak";
-            home-manager.extraSpecialArgs =
-              inputs
-              // {
-                inherit outputs globals secrets;
-              };
-            home-manager.users = {
-              ${globals.username} = {
-                imports = [
-                  ./home
-                  ./home/${globals.username}.nix
-                ];
-              };
-              root = {
-                imports = [
-                  ./home
-                  ./home/root.nix
-                ];
-              };
-            };
+            home-manager.extraSpecialArgs = specialArgs;
           }
           vscode-server.nixosModules.default
         ];

@@ -1,13 +1,13 @@
 {
   pkgs,
-  dotfiles,
+  inputs,
   ...
 }: {
   programs.home-manager.enable = true;
 
   home = {
     file.dotfiles = {
-      source = dotfiles;
+      source = inputs.dotfiles;
       recursive = true;
       target = "./.tmp/dotfiles";
       onChange = ''
