@@ -94,4 +94,6 @@
     enable = true;
     clock24 = true;
   };
+
+  nix.settings.download-buffer-size = 524288000;
 }
