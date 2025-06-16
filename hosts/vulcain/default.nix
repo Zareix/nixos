@@ -1,4 +1,4 @@
-{
+{pkgs, ...}: {
   imports = [
     ../../modules/proxmox.nix
     ../../modules/home-manager.nix
@@ -11,4 +11,9 @@
   shareServer.shareFolder = "/mnt/main/share";
 
   networking.hostName = "vulcain";
+
+  environment.systemPackages = with pkgs; [
+    libva-utils
+  ];
+  hardware.graphics.enable = true;
 }
