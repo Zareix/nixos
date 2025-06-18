@@ -1,5 +1,6 @@
 {
   imports = [
+    <nixpkgs/nixos/modules/installer/cd-dvd/installation-cd-minimal-combined.nix>
     ../../modules/home-manager.nix
     ../../modules/system.nix
     ../../modules/docker.nix
