@@ -49,6 +49,28 @@
           vscode-server.nixosModules.default
         ];
       };
+      luna = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+        specialArgs = {
+          inherit
+            inputs
+            globals
+            secrets
+            ;
+          pkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
+          };
+        };
+        modules = [
+          ./hosts/luna
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.extraSpecialArgs = specialArgs;
+          }
+          vscode-server.nixosModules.default
+        ];
+      };
       jupiter = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
         specialArgs = {
