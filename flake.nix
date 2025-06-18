@@ -68,6 +68,7 @@
           {
             home-manager.extraSpecialArgs = specialArgs;
           }
+          ./home
           vscode-server.nixosModules.default
         ];
       };
