@@ -1,6 +1,6 @@
 {modulesPath, ...}: {
   imports = [
-    (modulesPath + "/installer/cd-dvd/installation-cd-minimal-combined.nix")
+    ../../modules/proxmox.nix
     ../../modules/home-manager.nix
     ../../modules/system.nix
     ../../modules/docker.nix
