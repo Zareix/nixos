@@ -63,6 +63,7 @@
           };
         };
         modules = [
+          <nixpkgs/nixos/modules/installer/cd-dvd/installation-cd-minimal-combined.nix>
           ./hosts/luna
           home-manager.nixosModules.home-manager
           {
