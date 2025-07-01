@@ -85,20 +85,20 @@ On the first machine :
 
 ```sh
 cd /etc/nixos
-sudo git pull
-sudo nix flake update
-sudo nix-channel --update
-sudo nixos-rebuild switch --flake .
-sudo git add .
-sudo git commit -m "update"
-sudo git push
+git pull
+nix flake update
+nix-channel --update
+nh os switch . --ask
+git add .
+git commit -m "update"
+git push
 ```
 
 On other machines :
 
 ```sh
 cd /etc/nixos
-sudo git pull
-sudo nix-channel --update
-sudo nixos-rebuild switch --flake .
+git pull
+nix-channel --update
+nh os switch .
 ```

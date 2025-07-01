@@ -30,14 +30,18 @@
       "flakes"
     ];
   };
-
   nix.gc = {
     automatic = lib.mkDefault true;
     dates = lib.mkDefault "weekly";
     options = lib.mkDefault "--delete-older-than 14d";
   };
-
   nixpkgs.config.allowUnfree = true;
+
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 14d --keep 3";
+  };
 
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
