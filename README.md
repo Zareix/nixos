@@ -102,3 +102,4 @@ git pull
 nix-channel --update
 nh os switch .
 ```
+
