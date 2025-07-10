@@ -69,6 +69,7 @@
     gh
     git
     git-crypt
+    glib
     gnupg
     jq
     nano
