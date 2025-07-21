@@ -17,12 +17,12 @@ in {
     user = "raphaelgc";
   };
 
-  services.cron = {
-    enable = true;
-    systemCronJobs = [
-      "30 9 * * * root echo \"$(date): Starting docker prune\" >> /tmp/cron_docker-prune.log && ${dockerPkg}/bin/docker system prune -af >> /tmp/cron_docker-prune.log 2>&1"
-    ];
-  };
+  # services.cron = {
+  #   enable = true;
+  #   systemCronJobs = [
+  #     "30 9 * * * root echo \"$(date): Starting docker prune\" >> /tmp/cron_docker-prune.log && ${dockerPkg}/bin/docker system prune -af >> /tmp/cron_docker-prune.log 2>&1"
+  #   ];
+  # };
 
   system.activationScripts = {
     docker = {
