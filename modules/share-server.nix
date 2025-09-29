@@ -7,7 +7,16 @@
   cfg = config.shareServer;
 in {
   options.shareServer = {
-    shareFolder = lib.mkOption {type = lib.types.str;};
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Enable share server (NFS + Samba).";
+    };
+    shareFolder = lib.mkOption {
+      type = lib.types.str;
+      default = "/srv/share";
+      description = "Folder to share.";
+    };
   };
 
   config = {

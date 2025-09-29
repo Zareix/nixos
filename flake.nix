@@ -57,7 +57,8 @@
             };
           };
           modules = [
-            ./modules/system.nix
+            ./modules/common.nix
+            ./modules/share-server.nix
             ./modules/home-manager.nix
             ./hosts/${host.name}
             home-manager.nixosModules.home-manager
