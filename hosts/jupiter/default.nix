@@ -1,7 +1,6 @@
 {
   imports = [
     ../../modules/proxmox.nix
-    ../../modules/nfs-client.nix
   ];
 
   zrx = {
