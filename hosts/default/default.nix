@@ -1,8 +1,11 @@
 {
   imports = [
     ../../modules/proxmox.nix
-    ../../modules/docker.nix
-    # ../../modules/tailscale.nix
-    # ../../modules/nfs-client.nix
   ];
+
+  zrx = {
+    docker.enable = true;
+    tailscale.enable = false;
+    nfsClient.enable = false;
+  };
 }

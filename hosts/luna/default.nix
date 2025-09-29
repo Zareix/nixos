@@ -1,9 +1,13 @@
 {modulesPath, ...}: {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/docker.nix
-    ../../modules/tailscale.nix
   ];
+
+  zrx = {
+    docker.enable = true;
+    tailscale.enable = true;
+    nfsClient.enable = true;
+  };
 
   networking.networkmanager.enable = true;
 

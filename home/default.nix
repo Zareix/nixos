@@ -18,6 +18,12 @@
         ${pkgs.stow}/bin/stow --adopt git nano fastfetch powerline10k zsh linux
       '';
     };
+    # TODO Remove stow and onChange that to use home-manager file only like so
+    # file.dotfiles-test = {
+    #   source = inputs.dotfiles + "/fastfetch";
+    #   recursive = true;
+    #   target = "./test";
+    # };
 
     file.dockerConfig = {
       source = ../secrets/docker.json;

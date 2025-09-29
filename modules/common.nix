@@ -8,6 +8,8 @@
 }: {
   system.stateVersion = "24.05";
 
+  imports = lib.filesystem.listFilesRecursive ./zrx;
+
   users.groups.${globals.username} = {
     name = globals.username;
     gid = 1000;
@@ -33,16 +35,13 @@
   };
   nixpkgs.config.allowUnfree = true;
 
-  programs.nh = {
-    enable = true;
-    clean.enable = true;
-    clean.extraArgs = "--keep-since 14d --keep 3";
-  };
-
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  networking.hostName = meta.hostname;
+  networking.hostName =
+    if meta.hostname == "default"
+    then "nixos"
+    else meta.hostname;
   networking.firewall.enable = false;
 
   services.openssh = {
@@ -83,7 +82,6 @@
     rclone
     restic
     rustup
-    starship
     unzip
     stow
     zoxide
@@ -91,10 +89,17 @@
 
     (pkgs.python3.withPackages (python-pkgs: [python-pkgs.requests]))
   ];
+
   programs.zsh.enable = true;
   programs.tmux = {
     enable = true;
     clock24 = true;
+  };
+
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 14d --keep 3";
   };
 
   nix.settings.download-buffer-size = 524288000;
