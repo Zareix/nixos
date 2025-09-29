@@ -25,96 +25,49 @@
   }: let
     globals = import ./vars.nix;
     secrets = import ./secrets/vars.nix;
+
+    hosts = [
+      {
+        name = "default";
+        hostname = "nixos";
+      }
+      {
+        name = "luna";
+      }
+      {
+        name = "jupiter";
+      }
+      {
+        name = "vulcain";
+      }
+    ];
   in {
-    nixosConfigurations = {
-      default = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit
-            inputs
-            globals
-            secrets
-            ;
-          pkgs-unstable = import nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
+    nixosConfigurations = builtins.listToAttrs (map (host: {
+        name = host.name;
+        value = nixpkgs.lib.nixosSystem rec {
+          system = "x86_64-linux";
+          specialArgs = {
+            inherit inputs globals secrets;
+            pkgs-unstable = import nixpkgs-unstable {
+              inherit system;
+              config.allowUnfree = true;
+            };
+            meta = {
+              hostname = host.hostname or host.name;
+            };
           };
+          modules = [
+            ./modules/system.nix
+            ./modules/home-manager.nix
+            ./hosts/${host.name}
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.extraSpecialArgs = specialArgs;
+            }
+            vscode-server.nixosModules.default
+          ];
         };
-        modules = [
-          ./hosts/default
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.extraSpecialArgs = specialArgs;
-          }
-          vscode-server.nixosModules.default
-        ];
-      };
-      luna = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit
-            inputs
-            globals
-            secrets
-            ;
-          pkgs-unstable = import nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-        };
-        modules = [
-          ./hosts/luna
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.extraSpecialArgs = specialArgs;
-          }
-          vscode-server.nixosModules.default
-        ];
-      };
-      jupiter = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit
-            inputs
-            globals
-            secrets
-            ;
-          pkgs-unstable = import nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-        };
-        modules = [
-          ./hosts/jupiter
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.extraSpecialArgs = specialArgs;
-          }
-          vscode-server.nixosModules.default
-        ];
-      };
-      vulcain = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-        specialArgs = {
-          inherit
-            inputs
-            globals
-            secrets
-            ;
-          pkgs-unstable = import nixpkgs-unstable {
-            inherit system;
-            config.allowUnfree = true;
-          };
-        };
-        modules = [
-          ./hosts/vulcain
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.extraSpecialArgs = specialArgs;
-          }
-          vscode-server.nixosModules.default
-        ];
-      };
-    };
+      })
+      hosts);
   };
 }

@@ -1,16 +1,12 @@
 {pkgs, ...}: {
   imports = [
     ../../modules/proxmox.nix
-    ../../modules/home-manager.nix
-    ../../modules/system.nix
     ../../modules/docker.nix
     ../../modules/tailscale.nix
     ../../modules/share-server.nix
   ];
 
   shareServer.shareFolder = "/mnt/mass/share";
-
-  networking.hostName = "vulcain";
 
   environment.systemPackages = with pkgs; [
     libva-utils

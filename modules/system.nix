@@ -3,6 +3,7 @@
   lib,
   globals,
   secrets,
+  meta,
   ...
 }: {
   system.stateVersion = "24.05";
@@ -41,6 +42,7 @@
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
 
+  networking.hostName = meta.hostname;
   networking.firewall.enable = false;
 
   services.openssh = {
