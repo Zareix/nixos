@@ -19,7 +19,7 @@ in {
     };
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     # NFS
     services.nfs.server = {
       enable = true;
