@@ -7,7 +7,6 @@
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     vscode-server.url = "github:nix-community/nixos-vscode-server";
-    gitwatch.url = "github:gitwatch/gitwatch";
 
     dotfiles = {
       url = "github:Zareix/dotfiles";
@@ -19,8 +18,6 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
-    home-manager,
-    vscode-server,
     ...
   }: let
     globals = import ./vars.nix;
@@ -56,14 +53,14 @@
             };
           };
           modules = [
+            inputs.vscode-server.nixosModules.default
             ./modules/common.nix
+            inputs.home-manager.nixosModules.home-manager
             ./modules/home-manager.nix
             ./hosts/${host.name}
-            home-manager.nixosModules.home-manager
             {
               home-manager.extraSpecialArgs = specialArgs;
             }
-            vscode-server.nixosModules.default
           ];
         };
       })
