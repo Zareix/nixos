@@ -6,7 +6,6 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    vscode-server.url = "github:nix-community/nixos-vscode-server";
 
     dotfiles = {
       url = "github:Zareix/dotfiles";
@@ -53,7 +52,6 @@
             };
           };
           modules = [
-            inputs.vscode-server.nixosModules.default
             ./modules/common.nix
             inputs.home-manager.nixosModules.home-manager
             ./modules/home-manager.nix

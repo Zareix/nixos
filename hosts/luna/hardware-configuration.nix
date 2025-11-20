@@ -22,7 +22,7 @@
     fsType = "vfat";
     options = ["fmask=0077" "dmask=0077"];
   };
-  fileSystems."/mnt/usbhdd1" = { 
+  fileSystems."/mnt/usbhdd1" = {
     device = "/dev/disk/by-uuid/89c7b709-8627-4a88-b6f6-46a33e98a880";
     fsType = "ext4";
   };
@@ -38,7 +38,10 @@
         }
       ];
     };
-    defaultGateway = "192.168.0.1";
+    defaultGateway = {
+      interface = "eno1";
+      address = "192.168.0.1";
+    };
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

@@ -55,8 +55,6 @@
   };
   security.sudo.wheelNeedsPassword = false;
 
-  services.vscode-server.enable = true;
-
   environment.systemPackages = with pkgs; [
     alejandra
     bat
@@ -76,7 +74,9 @@
     nano
     ncdu
     nettools
+    nixd
     nixfmt-classic
+    nixos-generators
     openssh
     openssl
     rclone
