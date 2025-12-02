@@ -35,10 +35,9 @@ jobs:
         run: |
           # TARBALL=$(find ./out/tarball -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
           # echo "path=$TARBALL" >> $GITHUB_OUTPUT
-          # echo "filename=$(basename $TARBALL)" >> $GITHUB_OUTPUT
           echo "test" > test.txt
           TARBALL=./test.txt
-          echo "filename=$(basename $TARBALL)" >> $GITHUB_OUTPUT
+          echo "path=$TARBALL" >> $GITHUB_OUTPUT
           echo "Found tarball: $TARBALL"
 
       - name: Upload to S3
@@ -50,7 +49,7 @@ jobs:
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
         run: |
           filename=nixos-proxmox-lxc.tar.xz
-          aws s3 cp ${{ steps.tarball.outputs.path }} \
+          aws s3 cp ${{ steps.tarball.outputs.path }}
             s3://$S3_BUCKET/proxmox/$filename \
             --endpoint-url $S3_ENDPOINT
           echo "Uploaded $filename to S3"
