@@ -37,7 +37,7 @@ jobs:
         working-directory: /tmp/out/tarball
         run: |
           TARBALL=$(find . -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
-          mv $TARBALL ./nixos-lxc-proxmox-default.tar.xz
+          cp $TARBALL ./nixos-lxc-proxmox-default.tar.xz
 
       - name: Setup Tailscale
         uses: tailscale/github-action@v4
@@ -65,5 +65,4 @@ jobs:
 
       - name: Delete local output
         run: |
-          rm -rf ./out
-          rm ./nixos-lxc-proxmox-default.tar.xz
+          rm -rf /tmp/out
