@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  TAILSCALE_VERSION: 1.84.0
+
 jobs:
   build-lxc:
     name: Build Proxmox LXC Container
@@ -34,22 +37,26 @@ jobs:
         id: tarball
         run: |
           TARBALL=$(find ./out/tarball -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
-          echo "path=$TARBALL" >> $GITHUB_OUTPUT
-          echo "Found tarball: $TARBALL"
+          mv $TARBALL ./nixos-lxc-proxmox-default.tar.xz
 
-      - name: Upload to S3
+      - name: Setup Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+          tags: tag:github-actions
+          version: ${{ env.TAILSCALE_VERSION }}
+
+      - name: Upload to PVE
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
-          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          PVE_API_URL: ${{ secrets.PVE_API_URL }}
+          PVE_API_TOKEN: ${{ secrets.PVE_API_TOKEN }}
         run: |
-          filename=nixos-proxmox-lxc.tar.xz
-          aws s3 cp ${{ steps.tarball.outputs.path }} \
-            s3://$S3_BUCKET/proxmox/$filename \
-            --endpoint-url $S3_ENDPOINT
-          echo "Uploaded $filename to S3"
+          curl -k \
+            -X POST "$PVE_API_URL/api2/json/nodes/sol/storage/local/upload" \
+            -H 'Authorization: PVEAPIToken=$PVE_API_TOKEN' \
+            -F "content=vztmpl" \
+            -F "filename=@nixos-lxc-proxmox-default.tar.xz"
 
       - name: Lock git-crypt
         run: |
@@ -58,3 +65,4 @@ jobs:
       - name: Delete local output
         run: |
           rm -rf ./out
+          rm ./nixos-lxc-proxmox-default.tar.xz
