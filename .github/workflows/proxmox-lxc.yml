@@ -47,6 +47,8 @@ jobs:
 
       - name: Configure AWS credentials for S3
         uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: auto
 
       - name: Upload to S3
         env:
