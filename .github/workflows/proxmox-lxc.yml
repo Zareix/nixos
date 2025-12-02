@@ -46,7 +46,7 @@ jobs:
           echo "Found tarball: $TARBALL"
 
       - name: Configure AWS credentials for S3
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: auto
 
