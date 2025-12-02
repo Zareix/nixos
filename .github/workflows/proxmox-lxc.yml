@@ -49,7 +49,7 @@ jobs:
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
         run: |
           filename=nixos-proxmox-lxc.tar.xz
-          aws s3 cp ${{ steps.tarball.outputs.path }}
+          aws s3 cp ${{ steps.tarball.outputs.path }} \
             s3://$S3_BUCKET/proxmox/$filename \
             --endpoint-url $S3_ENDPOINT
           echo "Uploaded $filename to S3"
