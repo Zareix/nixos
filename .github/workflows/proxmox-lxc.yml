@@ -37,7 +37,7 @@ jobs:
         working-directory: /tmp/out/tarball
         run: |
           TARBALL=$(find . -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
-          cp $TARBALL ./nixos-lxc-proxmox-default.tar.xz
+          cp -L $TARBALL /tmp/nixos-lxc-proxmox-default.tar.xz
 
       - name: Setup Tailscale
         uses: tailscale/github-action@v4
@@ -48,7 +48,7 @@ jobs:
           version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Upload to PVE
-        working-directory: /tmp/out/tarball
+        working-directory: /tmp
         env:
           PVE_API_URL: ${{ secrets.PVE_API_URL }}
           PVE_API_TOKEN: ${{ secrets.PVE_API_TOKEN }}
@@ -66,3 +66,4 @@ jobs:
       - name: Delete local output
         run: |
           rm -rf /tmp/out
+          rm -f /tmp/nixos-lxc-proxmox-default.tar.xz
