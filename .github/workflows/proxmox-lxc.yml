@@ -21,22 +21,19 @@ jobs:
           sudo apt-get install -y git-crypt
           echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d | git-crypt unlock -
 
-      # - name: Install Nix
-      #   uses: cachix/install-nix-action@v31
-      #   with:
-      #     github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Build proxmox LXC container
-      #   run: |
-      #     nix run github:nix-community/nixos-generators -- -f proxmox-lxc --flake .#default -o ./out
+      - name: Build proxmox LXC container
+        run: |
+          nix run github:nix-community/nixos-generators -- -f proxmox-lxc --flake .#default -o ./out
 
       - name: Find tarball
         id: tarball
         run: |
-          # TARBALL=$(find ./out/tarball -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
-          # echo "path=$TARBALL" >> $GITHUB_OUTPUT
-          echo "test" > test.txt
-          TARBALL=./test.txt
+          TARBALL=$(find ./out/tarball -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
           echo "path=$TARBALL" >> $GITHUB_OUTPUT
           echo "Found tarball: $TARBALL"
 
