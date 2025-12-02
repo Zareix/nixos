@@ -10,10 +10,6 @@ jobs:
   build-lxc:
     name: Build Proxmox LXC Container
     runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: auto
     steps:
       - uses: actions/checkout@v5
         with:
@@ -45,13 +41,11 @@ jobs:
           echo "filename=$(basename $TARBALL)" >> $GITHUB_OUTPUT
           echo "Found tarball: $TARBALL"
 
-      - name: Configure AWS credentials for S3
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: auto
-
       - name: Upload to S3
         env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
         run: |
