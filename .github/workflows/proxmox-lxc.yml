@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-lxc:
-    name: Build Proxmox LXC Container
+    name: Build Proxmox LXC image and upload
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -55,7 +55,7 @@ jobs:
         run: |
           curl -k \
             -X POST "$PVE_API_URL/api2/json/nodes/sol/storage/local/upload" \
-            -H 'Authorization: PVEAPIToken=$PVE_API_TOKEN' \
+            -H "Authorization: PVEAPIToken=$PVE_API_TOKEN" \
             -F "content=vztmpl" \
             -F "filename=@nixos-lxc-proxmox-default.tar.xz"
 
