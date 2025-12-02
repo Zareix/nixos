@@ -22,4 +22,5 @@ jobs:
 
       - name: Build proxmox LXC container
         run: |
-          nix run github:nix-community/nixos-generators -- -f proxmox-lxc --flake . -o ./proxmox-lxc.tar.xz
+          nix run github:nix-community/nixos-generators -- -f proxmox-lxc --flake .#default -o ./out
+          ls -al ./out
