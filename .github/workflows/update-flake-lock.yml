@@ -7,17 +7,15 @@ on:
 
 jobs:
   nix-flake-update:
-    permissions:
-      contents: write
-      id-token: write
-      issues: write
-      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: DeterminateSystems/update-flake-lock@v28
         with:
           pr-title: "chore(deps): update Nix flake inputs"
