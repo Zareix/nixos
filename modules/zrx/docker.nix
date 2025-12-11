@@ -29,21 +29,20 @@ in {
       user = "raphaelgc";
     };
 
-    system.activationScripts = {
+    system.userActivationScripts = {
       docker = {
         deps = ["docker"];
         text = ''
-          echo "Restarting docker containers..."
+          echo "Restarting docker containers..." > /tmp/docker-restart.log
           CONTAINERS="$(${cfg.dockerPkg}/bin/docker ps --format "{{.Names}}" | grep -E "(beszel|mhos|komodo)")"
 
           if [ -n "$CONTAINERS" ]; then
-            echo "Found containers: $CONTAINERS"
             echo "$CONTAINERS" | while read -r container; do
-              echo "Restarting container: $container"
+              echo "Restarting container: $container" >> /tmp/docker-restart.log
               ${cfg.dockerPkg}/bin/docker restart "$container"
             done
           else
-            echo "No matching containers found"
+            echo "No matching containers found" >> /tmp/docker-restart.log
           fi
         '';
       };
