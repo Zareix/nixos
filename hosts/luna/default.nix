@@ -1,4 +1,4 @@
-{modulesPath, ...}: {
+{...}: {
   imports = [
     ./hardware-configuration.nix
   ];

@@ -8,7 +8,7 @@
     tailscale.enable = true;
     nfsClient = {
       enable = true;
-      localOnly = true;
+      local = true;
     };
   };
 }

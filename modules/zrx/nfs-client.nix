@@ -7,22 +7,22 @@
 in {
   options.zrx.nfsClient = {
     enable = lib.mkEnableOption "NFS client and mount remote shares.";
-    localOnly = lib.mkOption {
+    local = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = "Mount NFS shares only on local network.";
+      description = "Mount NFS shares on local network.";
     };
   };
 
   config = lib.mkIf cfg.enable {
     fileSystems."/mnt/vulcain" = {
-      # device = "vulcain.home.zrx.sh:/mnt/mass/share";
       device = "${
-        if cfg.localOnly
+        if cfg.local
         then "vulcain.home.zrx.sh"
         else "vulcain.zrx.sh"
-      }:/mnt/mass/share";
+      }:/";
       fsType = "nfs";
+      options = ["nfsvers=4.2" "rw" "noatime" "soft" "timeo=14" "retrans=3" "_netdev" "nofail"];
     };
   };
 }
