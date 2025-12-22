@@ -22,7 +22,7 @@ in {
         else "vulcain.zrx.sh"
       }:/";
       fsType = "nfs";
-      options = ["nfsvers=4.2" "rw" "noatime" "soft" "timeo=14" "retrans=3" "_netdev" "nofail"];
+      options = ["nfsvers=4.2" "rw" "soft" "rsize=262144" "wsize=262144" "nconnect=8" "timeo=60" "retrans=2" "_netdev" "nofail"];
     };
   };
 }
