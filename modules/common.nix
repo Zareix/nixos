@@ -84,12 +84,14 @@
     rustup
     unzip
     stow
-    zed-editor
     zoxide
     zsh
 
     (pkgs.python3.withPackages (python-pkgs: [python-pkgs.requests]))
   ];
+
+  # For Zed remote server to work
+  programs.nix-ld.enable = true;
 
   programs.zsh.enable = true;
   programs.tmux = {
