@@ -34,7 +34,7 @@ in {
         deps = ["docker"];
         text = ''
           echo "Restarting docker containers..." > /tmp/docker-restart.log
-          CONTAINERS="$(${cfg.dockerPkg}/bin/docker ps --format "{{.Names}}" | grep -E "(beszel|mhos|komodo)")"
+          CONTAINERS="$(${cfg.dockerPkg}/bin/docker ps --format "{{.Names}}" | grep -E "(beszel|komodo)")"
 
           if [ -n "$CONTAINERS" ]; then
             echo "$CONTAINERS" | while read -r container; do
