@@ -11,7 +11,7 @@ in {
     enable = lib.mkEnableOption "Docker and related services.";
     dockerPkg = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.docker_28;
+      default = pkgs.docker_29;
       description = "Docker package to use.";
     };
   };
