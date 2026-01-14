@@ -84,6 +84,7 @@
     rustup
     unzip
     stow
+    zed-editor
     zoxide
     zsh
 
