@@ -26,7 +26,6 @@ in {
         "nfsvers=3"
         "rw"
         "hard"
-        "intr"
         "noatime"
         "rsize=1048576"
         "wsize=1048576"
