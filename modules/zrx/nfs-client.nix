@@ -25,10 +25,10 @@ in {
       options = [
         "vers=3"
         "proto=tcp"
-	"rw"
+        "rw"
         "hard"
-	"nolock"
-	"noatime"
+        "nolock"
+        "noatime"
         "rsize=262144"
         "wsize=262144"
         "_netdev"
