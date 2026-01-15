@@ -20,7 +20,7 @@ in {
         if cfg.local
         then "vulcain.home.zrx.sh"
         else "vulcain.zrx.sh"
-      }:/share";
+      }:/mnt/mass/share";
       fsType = "nfs";
       options = [
         "vers=3"
