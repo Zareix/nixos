@@ -23,7 +23,7 @@ in {
       }:/";
       fsType = "nfs";
       options = [
-        "nfsvers=4.2"
+        "nfsvers=3"
         "rw"
         "hard"
         "intr"
@@ -32,6 +32,7 @@ in {
         "wsize=1048576"
         "_netdev"
         "nofail"
+	"nolock"
       ];
     };
   };
