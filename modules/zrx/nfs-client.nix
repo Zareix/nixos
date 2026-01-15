@@ -29,8 +29,8 @@ in {
         "hard"
 	"nolock"
 	"noatime"
-        "rsize=1048576"
-        "wsize=1048576"
+        "rsize=262144"
+        "wsize=262144"
         "_netdev"
         "nofail"
       ];
