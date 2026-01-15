@@ -23,15 +23,16 @@ in {
       }:/";
       fsType = "nfs";
       options = [
-        "nfsvers=3"
-        "rw"
+        "vers=3"
+        "proto=tcp"
+	"rw"
         "hard"
-        "noatime"
+	"nolock"
+	"noatime"
         "rsize=1048576"
         "wsize=1048576"
         "_netdev"
         "nofail"
-	"nolock"
       ];
     };
   };
