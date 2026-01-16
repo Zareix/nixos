@@ -6,9 +6,13 @@
   zrx = {
     docker.enable = true;
     tailscale.enable = true;
-    nfsClient = {
+    # nfsClient = {
+    #   enable = true;
+    #   local = true;
+    # };
+    shareServer = {
       enable = true;
-      local = true;
+      shareFolder = "/mnt/mass/share";
     };
   };
 }
