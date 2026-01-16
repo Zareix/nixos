@@ -22,18 +22,6 @@ in {
         else "vulcain.zrx.sh"
       }:/mnt/mass/share";
       fsType = "nfs";
-      options = [
-        "vers=3"
-        "proto=tcp"
-        "rw"
-        "hard"
-        "nolock"
-        "noatime"
-        "rsize=262144"
-        "wsize=262144"
-        "_netdev"
-        "nofail"
-      ];
     };
   };
 }
