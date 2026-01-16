@@ -28,6 +28,7 @@ in {
     };
 
     # SAMBA
+    # Run `sudo smbpasswd -a my_user` to add user
     services.samba = {
       enable = true;
       settings = {
