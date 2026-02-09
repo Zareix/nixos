@@ -31,8 +31,7 @@ in {
 
     systemd.services.docker.serviceConfig = {
       ExecStartPost = [
-        "-${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker ps -aq --filter \"name=komodo\" | ${pkgs.findutils}/bin/xargs -r ${pkgs.docker}/bin/docker restart'"
-        "-${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker ps -aq --filter \"name=godoxy\" | ${pkgs.findutils}/bin/xargs -r ${pkgs.docker}/bin/docker restart'"
+        "-${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker ps -q --filter volume=/var/run/docker.sock --filter volume=/run/docker.sock | ${pkgs.findutils}/bin/xargs -r ${pkgs.docker}/bin/docker restart'"
       ];
     };
   };
