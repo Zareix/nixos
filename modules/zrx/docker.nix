@@ -29,23 +29,11 @@ in {
       user = "raphaelgc";
     };
 
-    system.userActivationScripts = {
-      docker = {
-        deps = ["docker"];
-        text = ''
-          echo "Restarting docker containers..." > /tmp/docker-restart.log
-          CONTAINERS="$(${cfg.dockerPkg}/bin/docker ps --format "{{.Names}}" | grep -E "(beszel|komodo)")"
-
-          if [ -n "$CONTAINERS" ]; then
-            echo "$CONTAINERS" | while read -r container; do
-              echo "Restarting container: $container" >> /tmp/docker-restart.log
-              ${cfg.dockerPkg}/bin/docker restart "$container"
-            done
-          else
-            echo "No matching containers found" >> /tmp/docker-restart.log
-          fi
-        '';
-      };
+    systemd.services.docker.serviceConfig = {
+      ExecStartPost = [
+        "-${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker ps -aq --filter \"name=komodo\" | ${pkgs.findutils}/bin/xargs -r ${pkgs.docker}/bin/docker restart'"
+        "-${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker ps -aq --filter \"name=godoxy\" | ${pkgs.findutils}/bin/xargs -r ${pkgs.docker}/bin/docker restart'"
+      ];
     };
   };
 }
