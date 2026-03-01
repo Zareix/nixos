@@ -87,7 +87,6 @@ On the first machine :
 cd /etc/nixos
 git pull
 nix flake update
-nix-channel --update
 nh os switch . --ask
 git add .
 git commit -m "update"
@@ -99,7 +98,5 @@ On other machines :
 ```sh
 cd /etc/nixos
 git pull
-nix-channel --update
 nh os switch .
 ```
-

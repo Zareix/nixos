@@ -27,6 +27,7 @@ in {
       path = "/data/stacks";
       remote = "https://github.com/Zareix/docker.git";
       user = "raphaelgc";
+      message = "chore: auto-commit by gitwatch";
     };
 
     systemd.services.docker.serviceConfig = {

@@ -52,6 +52,7 @@
             };
           };
           modules = [
+            {imports = nixpkgs.lib.filesystem.listFilesRecursive ./modules/patches;}
             ./modules/common.nix
             inputs.home-manager.nixosModules.home-manager
             ./modules/home-manager.nix
