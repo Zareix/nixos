@@ -36,7 +36,7 @@ jobs:
       - name: Rename VMA
         run: |
           VMA=$(find -L ./result -name "vzdump-qemu-*.vma.zst" -type f)
-          cp -L "$VMA" /tmp/nixos-vm-proxmox-default.vma.zst
+          cp -L "$VMA" /tmp/vzdump-qemu-nixos-proxmox-default.vma.zst
 
       - name: Setup Tailscale
         uses: tailscale/github-action@v4
@@ -46,19 +46,17 @@ jobs:
           tags: tag:github-actions
           version: ${{ env.TAILSCALE_VERSION }}
 
-      - name: Setup SSH
-        run: |
-          install -m 600 -D /dev/null ~/.ssh/id_ed25519
-          echo "${{ secrets.PVE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          echo "${{ secrets.PVE_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-
       - name: Upload to PVE
+        working-directory: /tmp
         env:
-          PVE_HOST: ${{ secrets.PVE_HOST }}
-          PVE_SSH_USER: ${{ secrets.PVE_SSH_USER }}
+          PVE_API_URL: ${{ secrets.PVE_API_URL }}
+          PVE_API_TOKEN: ${{ secrets.PVE_API_TOKEN }}
         run: |
-          scp /tmp/nixos-vm-proxmox-default.vma.zst \
-            "$PVE_SSH_USER@$PVE_HOST:/var/lib/vz/dump/nixos-vm-proxmox-default.vma.zst"
+          curl \
+            -X POST "$PVE_API_URL/api2/json/nodes/sol/storage/local/upload" \
+            -H "Authorization: PVEAPIToken=$PVE_API_TOKEN" \
+            -F "content=import" \
+            -F "filename=@vzdump-qemu-nixos-proxmox-default.vma.zst"
 
       - name: Lock git-crypt
         run: |
@@ -67,4 +65,4 @@ jobs:
       - name: Delete local output
         run: |
           rm -rf ./result
-          rm -f /tmp/nixos-vm-proxmox-default.vma.zst
+          rm -f /tmp/vzdump-qemu-nixos-proxmox-default.vma.zst

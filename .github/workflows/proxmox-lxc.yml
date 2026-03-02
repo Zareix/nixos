@@ -52,7 +52,7 @@ jobs:
           PVE_API_URL: ${{ secrets.PVE_API_URL }}
           PVE_API_TOKEN: ${{ secrets.PVE_API_TOKEN }}
         run: |
-          curl -k \
+          curl \
             -X POST "$PVE_API_URL/api2/json/nodes/sol/storage/local/upload" \
             -H "Authorization: PVEAPIToken=$PVE_API_TOKEN" \
             -F "content=vztmpl" \
