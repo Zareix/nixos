@@ -1,4 +1,4 @@
-name: Proxmox LXC
+name: Proxmox VM
 
 on:
   push:
@@ -10,8 +10,8 @@ env:
   TAILSCALE_VERSION: 1.84.0
 
 jobs:
-  build-lxc:
-    name: Build Proxmox LXC image and upload
+  build-vm:
+    name: Build Proxmox VM image and upload
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -29,14 +29,14 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build proxmox LXC container
+      - name: Build proxmox VM image
         run: |
-          nixos-rebuild build-image --image-variant proxmox-lxc --flake .#default
+          nixos-rebuild build-image --image-variant proxmox --flake .#default
 
-      - name: Rename tarball
+      - name: Rename VMA
         run: |
-          TARBALL=$(find ./result -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
-          cp -L "$TARBALL" /tmp/nixos-lxc-proxmox-default.tar.xz
+          VMA=$(find ./result -name "vzdump-qemu-*.vma.zst" -type f)
+          cp -L "$VMA" /tmp/nixos-vm-proxmox-default.vma.zst
 
       - name: Setup Tailscale
         uses: tailscale/github-action@v4
@@ -55,8 +55,8 @@ jobs:
           curl -k \
             -X POST "$PVE_API_URL/api2/json/nodes/sol/storage/local/upload" \
             -H "Authorization: PVEAPIToken=$PVE_API_TOKEN" \
-            -F "content=vztmpl" \
-            -F "filename=@nixos-lxc-proxmox-default.tar.xz"
+            -F "content=import" \
+            -F "filename=@nixos-vm-proxmox-default.vma.zst"
 
       - name: Lock git-crypt
         run: |
@@ -65,4 +65,4 @@ jobs:
       - name: Delete local output
         run: |
           rm -rf ./result
-          rm -f /tmp/nixos-lxc-proxmox-default.tar.xz
+          rm -f /tmp/nixos-vm-proxmox-default.vma.zst
