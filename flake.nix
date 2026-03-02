@@ -11,12 +11,18 @@
       url = "github:Zareix/dotfiles";
       flake = false;
     };
+
+    gitwatch-fork = {
+      url = "github:Zareix/gitwatch/fix/nix-args-quote";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     nixpkgs-unstable,
+    gitwatch-fork,
     ...
   }: let
     globals = import ./vars.nix;
@@ -47,12 +53,15 @@
               inherit system;
               config.allowUnfree = true;
             };
+            gitwatch-fork = gitwatch-fork;
             meta = {
               hostname = host.name;
             };
           };
           modules = [
-            {imports = nixpkgs.lib.filesystem.listFilesRecursive ./modules/patches;}
+            {
+              imports = nixpkgs.lib.filesystem.listFilesRecursive ./modules/patches;
+            }
             ./modules/common.nix
             inputs.home-manager.nixosModules.home-manager
             ./modules/home-manager.nix
