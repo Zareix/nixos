@@ -1,5 +1,6 @@
 {
   imports = [
+    ./hardware-configuration.nix
     ../../modules/proxmox.nix
   ];
 
@@ -11,4 +12,8 @@
       shareFolder = "/mnt/mass/share";
     };
   };
+
+  boot.loader.grub.enable = true;
+
+  networking.networkmanager.enable = true;
 }

@@ -38,7 +38,11 @@ read -r -p "Enter secret-key in base64: " secret_key
 echo "$secret_key" | base64 -d >./.secret-key
 git-crypt unlock ./.secret-key
 git config --global --add safe.directory /etc/nixos
+```
 
+Verify confign, copy old `hardware-configuration.nix` from `nixos.bak` if exists, then run
+
+```sh
 nixos-rebuild switch --flake .
 ```
 
