@@ -35,7 +35,7 @@ jobs:
 
       - name: Rename tarball
         run: |
-          TARBALL=$(find ./result -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
+          TARBALL=$(find -L ./result -name "nixos-image-lxc-proxmox-*.tar.xz" -type f)
           cp -L "$TARBALL" /tmp/nixos-lxc-proxmox-default.tar.xz
 
       - name: Setup Tailscale

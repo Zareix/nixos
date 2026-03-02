@@ -35,7 +35,7 @@ jobs:
 
       - name: Rename VMA
         run: |
-          VMA=$(find ./result -name "vzdump-qemu-*.vma.zst" -type f)
+          VMA=$(find -L ./result -name "vzdump-qemu-*.vma.zst" -type f)
           cp -L "$VMA" /tmp/nixos-vm-proxmox-default.vma.zst
 
       - name: Setup Tailscale
