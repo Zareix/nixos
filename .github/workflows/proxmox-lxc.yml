@@ -31,7 +31,7 @@ jobs:
 
       - name: Build proxmox LXC container
         run: |
-          nixos-rebuild build-image --image-variant proxmox-lxc --flake .#default
+          nix build '.#nixosConfigurations.default.config.system.build.images.proxmox-lxc'
 
       - name: Rename tarball
         run: |

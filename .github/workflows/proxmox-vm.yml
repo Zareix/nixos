@@ -31,7 +31,7 @@ jobs:
 
       - name: Build proxmox VM image
         run: |
-          nixos-rebuild build-image --image-variant proxmox --flake .#default
+          nix build '.#nixosConfigurations.default.config.system.build.images.proxmox'
 
       - name: Rename VMA
         run: |
