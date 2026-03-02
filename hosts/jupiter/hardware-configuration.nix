@@ -17,9 +17,9 @@
     fsType = "ext4";
   };
   fileSystems."/mnt/mass" = {
-    device = "/dev/disk/by-uuid/c46ab6e8-1bbb-4307-9b55-12ef7c9d27c9";
+    device = "/dev/disk/by-uuid/e59ec576-6efd-4f7f-bd91-b39b6b16ee46";
     fsType = "ext4";
-    options = ["nofail" "users"];
+    options = ["nofail" "defaults"];
   };
 
   swapDevices = [];

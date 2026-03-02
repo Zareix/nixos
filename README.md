@@ -93,7 +93,7 @@ git pull
 nix flake update
 nh os switch . --ask
 git add .
-git commit -m "update"
+git commit -m "chore: update"
 git push
 ```
 
