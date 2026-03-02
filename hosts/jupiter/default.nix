@@ -1,7 +1,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/proxmox.nix
   ];
 
   zrx = {
