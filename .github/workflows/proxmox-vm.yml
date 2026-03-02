@@ -46,17 +46,19 @@ jobs:
           tags: tag:github-actions
           version: ${{ env.TAILSCALE_VERSION }}
 
-      - name: Upload to PVE
-        working-directory: /tmp
-        env:
-          PVE_API_URL: ${{ secrets.PVE_API_URL }}
-          PVE_API_TOKEN: ${{ secrets.PVE_API_TOKEN }}
+      - name: Setup SSH
         run: |
-          curl -k \
-            -X POST "$PVE_API_URL/api2/json/nodes/sol/storage/local/upload" \
-            -H "Authorization: PVEAPIToken=$PVE_API_TOKEN" \
-            -F "content=import" \
-            -F "filename=@nixos-vm-proxmox-default.vma.zst"
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.PVE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.PVE_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Upload to PVE
+        env:
+          PVE_HOST: ${{ secrets.PVE_HOST }}
+          PVE_SSH_USER: ${{ secrets.PVE_SSH_USER }}
+        run: |
+          scp /tmp/nixos-vm-proxmox-default.vma.zst \
+            "$PVE_SSH_USER@$PVE_HOST:/var/lib/vz/dump/nixos-vm-proxmox-default.vma.zst"
 
       - name: Lock git-crypt
         run: |
