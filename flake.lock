@@ -16,19 +16,18 @@
         "type": "github"
       }
     },
-    "gitwatch-fork": {
+    "gitwatch": {
       "flake": false,
       "locked": {
-        "lastModified": 1772447908,
-        "narHash": "sha256-Aq/+xohg+pWkqdYJWF9CnKC75U0W0pWsUm1huQLcbGk=",
-        "owner": "Zareix",
+        "lastModified": 1773257580,
+        "narHash": "sha256-KREIAuUP7DQvlw1eLksfSQqBHpkKih53jtW3n3HDOSA=",
+        "owner": "gitwatch",
         "repo": "gitwatch",
-        "rev": "92a5a37b0b67b03308a3861e0233c32989d029c7",
+        "rev": "59bbed5e0a23143d8b285cc07e491d0daa716393",
         "type": "github"
       },
       "original": {
-        "owner": "Zareix",
-        "ref": "fix/nix-args-quote",
+        "owner": "gitwatch",
         "repo": "gitwatch",
         "type": "github"
       }
@@ -40,11 +39,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1772633058,
-        "narHash": "sha256-SO7JapRy2HPhgmqiLbfnW1kMx5rakPMKZ9z3wtRLQjI=",
+        "lastModified": 1773264488,
+        "narHash": "sha256-rK0507bDuWBrZo+0zts9bCs/+RRUEHuvFE5DHWPxX/Q=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "080657a04188aca25f8a6c70a0fb2ea7e37f1865",
+        "rev": "5c0f63f8d55040a7eed69df7e3fcdd15dfb5a04c",
         "type": "github"
       },
       "original": {
@@ -56,11 +55,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1772822230,
-        "narHash": "sha256-yf3iYLGbGVlIthlQIk5/4/EQDZNNEmuqKZkQssMljuw=",
+        "lastModified": 1773068389,
+        "narHash": "sha256-vMrm7Pk2hjBRPnCSjhq1pH0bg350Z+pXhqZ9ICiqqCs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "71caefce12ba78d84fe618cf61644dce01cf3a96",
+        "rev": "44bae273f9f82d480273bab26f5c50de3724f52f",
         "type": "github"
       },
       "original": {
@@ -72,11 +71,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1772736753,
-        "narHash": "sha256-au/m3+EuBLoSzWUCb64a/MZq6QUtOV8oC0D9tY2scPQ=",
+        "lastModified": 1773110118,
+        "narHash": "sha256-mPAG8phMbCReKSiKAijjjd3v7uVcJOQ75gSjGJjt/Rk=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "917fec990948658ef1ccd07cef2a1ef060786846",
+        "rev": "e607cb5360ff1234862ac9f8839522becb853bb9",
         "type": "github"
       },
       "original": {
@@ -89,7 +88,7 @@
     "root": {
       "inputs": {
         "dotfiles": "dotfiles",
-        "gitwatch-fork": "gitwatch-fork",
+        "gitwatch": "gitwatch",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable"

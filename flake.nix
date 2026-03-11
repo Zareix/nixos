@@ -12,8 +12,8 @@
       flake = false;
     };
 
-    gitwatch-fork = {
-      url = "github:Zareix/gitwatch/fix/nix-args-quote";
+    gitwatch = {
+      url = "github:gitwatch/gitwatch";
       flake = false;
     };
   };
@@ -22,7 +22,7 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
-    gitwatch-fork,
+    gitwatch,
     ...
   }: let
     globals = import ./vars.nix;
@@ -53,7 +53,7 @@
               inherit system;
               config.allowUnfree = true;
             };
-            gitwatch-fork = gitwatch-fork;
+            gitwatch = gitwatch;
             meta = {
               hostname = host.name;
             };
@@ -65,10 +65,10 @@
             ./modules/common.nix
             inputs.home-manager.nixosModules.home-manager
             ./modules/home-manager.nix
-            ./hosts/${host.name}
             {
               home-manager.extraSpecialArgs = specialArgs;
             }
+            ./hosts/${host.name}
           ];
         };
       })
