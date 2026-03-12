@@ -19,7 +19,7 @@ lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
 lxc.mount.entry: /dev/dri/renderD128 dev/renderD128 none bind,optional,create=file
 ```
 
-- Then open a shell in the container and run following commands :
+## Deploy script
 
 ```sh
 mkdir -p ~/.config/nix
@@ -40,46 +40,9 @@ git-crypt unlock ./.secret-key
 git config --global --add safe.directory /etc/nixos
 ```
 
-Verify confign, copy old `hardware-configuration.nix` from `nixos.bak` if exists, then run
+Verify config, copy old `hardware-configuration.nix` from `nixos.bak` if exists, then run
 
 ```sh
-nixos-rebuild switch --flake .
-```
-
-### To deploy on Hetzner
-
-- We'll use [nixos-infect](https://github.com/elitak/nixos-infect)
-- First boot with server using a default OS like Ubuntu 22.04
-- Then add the following to cloud-init
-
-```yaml
-#cloud-config
-
-runcmd:
-  - curl https://raw.githubusercontent.com/elitak/nixos-infect/master/nixos-infect | PROVIDER=hetznercloud NIX_CHANNEL=nixos-24.05 bash 2>&1 | tee /tmp/infect.log
-```
-
-- Wait a few minutes for nixos-infect to finish
-- Then ssh to the server and run following commands :
-
-```sh
-mkdir -p ~/.config/nix
-echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
-
-nix-channel --update
-nix-env -f '<nixpkgs>' -iA git
-nix-env -f '<nixpkgs>' -iA git-crypt
-
-cd /etc
-mv nixos nixos.bak
-git clone https://github.com/Zareix/nixos
-cd nixos
-
-read -r -p "Enter secret-key in base64: " secret_key
-echo "$secret_key" | base64 -d >./.secret-key
-git-crypt unlock ./.secret-key
-git config --global --add safe.directory /etc/nixos
-
 nixos-rebuild switch --flake .
 ```
 
