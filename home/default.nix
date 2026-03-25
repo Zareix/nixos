@@ -35,6 +35,10 @@
         rm -rf ./.tmp/.docker/config.json
       '';
     };
+    packages = with pkgs; [
+      docker-buildx
+    ];
+    file.".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";
 
     file.zshenv = {
       source = ../secrets/.zshenv;
