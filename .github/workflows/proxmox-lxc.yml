@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  TAILSCALE_VERSION: 1.94.2
+  TAILSCALE_VERSION: 1.96.4
 
 jobs:
   build-lxc:
