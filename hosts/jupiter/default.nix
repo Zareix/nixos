@@ -16,6 +16,7 @@
   boot.loader.grub.device = "/dev/vda";
 
   services.qemuGuest.enable = true;
+  services.fstrim.enable = true;
 
   networking.networkmanager.enable = true;
 }
