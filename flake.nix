@@ -11,18 +11,12 @@
       url = "github:Zareix/dotfiles";
       flake = false;
     };
-
-    gitwatch = {
-      url = "github:gitwatch/gitwatch";
-      flake = false;
-    };
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     nixpkgs-unstable,
-    gitwatch,
     ...
   }: let
     globals = import ./vars.nix;
@@ -53,7 +47,6 @@
               inherit system;
               config.allowUnfree = true;
             };
-            gitwatch = gitwatch;
             meta = {
               hostname = host.name;
             };
