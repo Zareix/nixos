@@ -7,10 +7,7 @@
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    dotfiles = {
-      url = "github:Zareix/dotfiles";
-      flake = false;
-    };
+    dotfiles.url = "github:Zareix/dotfiles";
   };
 
   outputs = inputs @ {

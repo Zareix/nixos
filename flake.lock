@@ -1,13 +1,12 @@
 {
   "nodes": {
     "dotfiles": {
-      "flake": false,
       "locked": {
-        "lastModified": 1779038199,
-        "narHash": "sha256-wzlwHAj6qoa2h0C1z8chin5nyUE1n5hGbeAlUJ/+nQg=",
+        "lastModified": 1779039068,
+        "narHash": "sha256-MXb7VRwA3WN1CWUDnP2cmA9x/GKFpGuuDyZpYqFX+PI=",
         "owner": "Zareix",
         "repo": "dotfiles",
-        "rev": "fbc33b7a454fea1945802fa80cee1ee365e4d2d0",
+        "rev": "b78e3675fd0fe846724f1157086b4cb388b7b5fb",
         "type": "github"
       },
       "original": {

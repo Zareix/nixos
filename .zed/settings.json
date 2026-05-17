@@ -1,10 +1,10 @@
 {
   "languages": {
     "Nix": {
-      "language_servers": [ "nixd", "!nil" ],
+      "language_servers": ["nixd", "!nil"],
       "formatter": {
         "external": {
-          "command": "alejandra",  // or "nixfmt"
+          "command": "alejandra", // or "nixfmt"
           "arguments": ["--quiet", "--"]
         }
       }

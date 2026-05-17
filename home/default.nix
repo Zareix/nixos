@@ -5,26 +5,14 @@
 }: {
   programs.home-manager.enable = true;
 
-  home = {
-    file.dotfiles = {
-      source = inputs.dotfiles;
-      recursive = true;
-      target = "./.tmp/dotfiles";
-      onChange = ''
-        rm -rf ./dotfiles
-        cp -rL ./.tmp/dotfiles ./dotfiles
-        rm -rf ./.tmp/dotfiles
-        cd ./dotfiles
-        ${pkgs.stow}/bin/stow --adopt git nano fastfetch powerlevel10k zsh linux
-      '';
-    };
-    # TODO Remove stow and onChange that to use home-manager file only like so
-    # file.dotfiles-test = {
-    #   source = inputs.dotfiles + "/fastfetch";
-    #   recursive = true;
-    #   target = "./test";
-    # };
+  imports = [inputs.dotfiles.homeManagerModules.default];
 
+  dotfiles = {
+    enable = true;
+    packages = ["git" "nano" "fastfetch" "powerlevel10k" "zsh" "linux"];
+  };
+
+  home = {
     file.dockerConfig = {
       source = ../secrets/docker.json;
       target = "./.tmp/.docker/config.json";
