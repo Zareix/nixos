@@ -17,15 +17,11 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    virtualisation.docker.enable = true;
-    virtualisation.docker.package = cfg.dockerPkg;
+    virtualisation.docker = {
+      enable = true;
+      package = cfg.dockerPkg;
+    };
 
     users.users.${globals.username}.extraGroups = ["docker"];
-
-    systemd.services.docker.serviceConfig = {
-      ExecStartPost = [
-        "-${pkgs.bash}/bin/bash -c '${pkgs.docker}/bin/docker ps -q --filter volume=/var/run/docker.sock --filter volume=/run/docker.sock | ${pkgs.findutils}/bin/xargs -r ${pkgs.docker}/bin/docker restart'"
-      ];
-    };
   };
 }
