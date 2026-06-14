@@ -25,3 +25,4 @@ jobs:
         uses: DeterminateSystems/update-flake-lock@v28
         with:
           pr-title: "chore(deps): update Nix flake inputs"
+          pr-assignees: Zareix
