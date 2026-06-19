@@ -9,7 +9,6 @@
     dyndns.enable = true;
   };
 
-  networking.networkmanager.enable = true;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -18,6 +17,9 @@
     layout = "fr";
     variant = "";
   };
-
   console.keyMap = "fr";
+
+  networking.networkmanager.enable = true;
+
+  system.stateVersion = "24.05";
 }
