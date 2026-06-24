@@ -1,13 +1,20 @@
 {
+  "lsp": {
+    "nixd": {
+      "binary": {
+        "path": "nixd",
+      },
+    },
+  },
   "languages": {
     "Nix": {
       "language_servers": ["nixd", "!nil"],
       "formatter": {
         "external": {
           "command": "alejandra", // or "nixfmt"
-          "arguments": ["--quiet", "--"]
-        }
-      }
-    }
-  }
+          "arguments": ["--quiet", "--"],
+        },
+      },
+    },
+  },
 }

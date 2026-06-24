@@ -1,0 +1,12 @@
+keys:
+  # Personal age key — run: age-keygen -y ~/.config/sops/age/keys.txt
+  - &personal age1t549aw3x47jn9k4g6m79w8rm3ze9pqpw6khf9zd05llareprr3hs2wxcvh
+
+  # Host keys — on each host run: ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub
+  - &luna age15dc3qzvw2ysrhm538qhjrytdlz0ptrwaxv5ejjhpuka4v2pq394q6eqx9t
+  - &jupiter age1s9epc2qvd0ee5c3krvepq2gflvtw5v80vzk3m9jdpdu8huk8yssss2y9l7
+
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age: [*personal, *luna, *jupiter]

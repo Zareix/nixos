@@ -1,12 +1,17 @@
 {
   pkgs,
   lib,
+  config,
   globals,
-  secrets,
   meta,
   ...
 }: {
   imports = lib.filesystem.listFilesRecursive ./zrx;
+
+  sops.secrets.hashedPassword = {
+    sopsFile = ../secrets/common.yaml;
+    neededForUsers = true;
+  };
 
   users.groups.${globals.username} = {
     name = globals.username;
@@ -21,7 +26,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJZwRQQJPlgMKHR2hGm2pI41xEu+Is9QSI966HV6i9uZ raphcatarino@gmail.com"
     ];
     shell = pkgs.zsh;
-    hashedPassword = secrets.hashedPassword;
+    hashedPasswordFile = config.sops.secrets.hashedPassword.path;
   };
   nix.settings.trusted-users = [globals.username];
 
@@ -76,7 +81,8 @@
     fzf
     gh
     git
-    git-crypt
+    age
+    sops
     glib
     gnupg
     jq

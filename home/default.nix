@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  config,
   ...
 }: {
   programs.home-manager.enable = true;
@@ -12,31 +13,29 @@
     packages = ["git" "nano" "fastfetch" "powerlevel10k" "zsh" "linux"];
   };
 
-  home = {
-    file.dockerConfig = {
-      source = ../secrets/docker.json;
-      target = "./.tmp/.docker/config.json";
-      onChange = ''
-        mkdir -p ./.docker
-        rm -rf ./.docker/config.json
-        cp -rL ./.tmp/.docker/config.json ./.docker/config.json
-        rm -rf ./.tmp/.docker/config.json
-      '';
+  sops = {
+    age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
+    secrets = {
+      docker_config = {
+        sopsFile = ../secrets/home.yaml;
+        path = "${config.home.homeDirectory}/.docker/config.json";
+      };
+      zshenv = {
+        sopsFile = ../secrets/home.yaml;
+        path = "${config.home.homeDirectory}/.zshenv";
+      };
+      rclone_conf = {
+        sopsFile = ../secrets/home.yaml;
+        path = "${config.home.homeDirectory}/.config/rclone/rclone.conf";
+      };
     };
+  };
+
+  home = {
     packages = with pkgs; [
       docker-buildx
     ];
     file.".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx";
-
-    file.zshenv = {
-      source = ../secrets/.zshenv;
-      target = ".zshenv";
-    };
-
-    file.rcloneConfig = {
-      source = ../secrets/rclone.conf;
-      target = ".config/rclone/rclone.conf";
-    };
 
     stateVersion = "23.11";
   };

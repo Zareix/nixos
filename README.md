@@ -1,25 +1,37 @@
 # nixos
 
-## Usage
+## Deploy script (new host)
 
-### To deploy in a proxmox lxc container
+### 1. Get new host's age pubkey
 
-- Create a new privileged container with nesting enabled.
-- In proxmox edit file `/etc/pve/lxc/<lxc-id>.conf` and add following lines for Tailscale :
+Boot the host (live ISO or minimal install). SSH host key is generated at first boot.
+Run locally (requires SSH reachable):
 
-```plain
-lxc.cgroup2.devices.allow: c 10:200 rwm
-lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```sh
+ssh-keyscan <host-ip> 2>/dev/null | grep ed25519 | ssh-to-age
 ```
 
-- Optionally, add following lines for GPU passthrough :
+### 2. Add host key to `.sops.yaml` (on your machine)
 
-```plain
-lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
-lxc.mount.entry: /dev/dri/renderD128 dev/renderD128 none bind,optional,create=file
+```yaml
+- &newhostname age1...  # paste key from step 1
 ```
 
-## Deploy script
+Add `*newhostname` to all `key_groups` in creation rules, then re-encrypt:
+
+```sh
+sops updatekeys secrets/common.yaml
+sops updatekeys secrets/home.yaml
+git add .sops.yaml secrets/
+git commit -m "feat: add newhostname sops key"
+git push
+```
+
+### 3. Add host to `flake.nix` and `hosts/`
+
+Add entry to the `hosts` list and create `hosts/newhostname/` directory with config.
+
+### 4. Deploy on the new host
 
 ```sh
 mkdir -p ~/.config/nix
@@ -27,28 +39,25 @@ echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
 
 nix-channel --update
 nix-env -f '<nixpkgs>' -iA git
-nix-env -f '<nixpkgs>' -iA git-crypt
 
 cd /etc
 mv nixos nixos.bak
 git clone https://github.com/Zareix/nixos
 cd nixos
-
-read -r -p "Enter secret-key in base64: " secret_key
-echo "$secret_key" | base64 -d >./.secret-key
-git-crypt unlock ./.secret-key
 git config --global --add safe.directory /etc/nixos
 ```
 
-Verify config, copy old `hardware-configuration.nix` from `nixos.bak` if exists, then run
+Verify config, copy old `hardware-configuration.nix` from `nixos.bak` if exists, then run:
 
 ```sh
-nixos-rebuild switch --flake .
+nixos-rebuild switch --flake .#newhostname
 ```
+
+sops-nix decrypts secrets automatically using `/etc/ssh/ssh_host_ed25519_key`. No key import needed.
 
 ## Update
 
-On the first machine :
+On the first machine:
 
 ```sh
 cd /etc/nixos
@@ -60,10 +69,21 @@ git commit -m "chore: update"
 git push
 ```
 
-On other machines :
+On other machines:
 
 ```sh
 cd /etc/nixos
 git pull
 nh os switch .
 ```
+
+## Secrets
+
+Edit existing secrets:
+
+```sh
+sops secrets/common.yaml   # system secrets
+sops secrets/home.yaml     # home secrets
+```
+
+Requires `SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt` in environment.
