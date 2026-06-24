@@ -10,7 +10,6 @@
       enable = true;
       shareFolder = "/mnt/mass/share";
     };
-    hermes-agent.enable = true;
   };
 
   boot.loader.systemd-boot.enable = true;

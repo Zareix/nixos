@@ -10,8 +10,6 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
-    hermes-agent.url = "github:NousResearch/hermes-agent";
-
     dotfiles.url = "github:Zareix/dotfiles";
   };
 
@@ -19,7 +17,6 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
-    hermes-agent,
     ...
   }: let
     globals = import ./vars.nix;
@@ -51,7 +48,6 @@
             };
           };
           modules = [
-            hermes-agent.nixosModules.default
             inputs.sops-nix.nixosModules.sops
             ./modules/common.nix
             inputs.home-manager.nixosModules.home-manager
