@@ -1,4 +1,4 @@
-{meta, ...}: {
+{...}: {
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
@@ -12,9 +12,4 @@
     LC_TELEPHONE = "fr_FR.UTF-8";
     LC_TIME = "fr_FR.UTF-8";
   };
-
-  networking.hostName =
-    if meta.hostname == "default"
-    then "nixos"
-    else meta.hostname;
 }
