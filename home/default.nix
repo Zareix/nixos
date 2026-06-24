@@ -1,7 +1,6 @@
 {
   pkgs,
   inputs,
-  config,
   ...
 }: {
   programs.home-manager.enable = true;
@@ -11,24 +10,6 @@
   dotfiles = {
     enable = true;
     packages = ["git" "nano" "fastfetch" "powerlevel10k" "zsh" "linux"];
-  };
-
-  sops = {
-    age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
-    secrets = {
-      docker_config = {
-        sopsFile = ../secrets/home.yaml;
-        path = "${config.home.homeDirectory}/.docker/config.json";
-      };
-      zshenv = {
-        sopsFile = ../secrets/home.yaml;
-        path = "${config.home.homeDirectory}/.zshenv";
-      };
-      rclone_conf = {
-        sopsFile = ../secrets/home.yaml;
-        path = "${config.home.homeDirectory}/.config/rclone/rclone.conf";
-      };
-    };
   };
 
   home = {
