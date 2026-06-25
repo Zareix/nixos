@@ -22,8 +22,4 @@
     owner = globals.username;
     mode = "0600";
   };
-
-  sops.secrets.hermes-env = {
-    sopsFile = ../../secrets/home.yaml;
-  };
 }
