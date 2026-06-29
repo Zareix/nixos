@@ -33,14 +33,6 @@
     options = ["nofail" "defaults"];
   };
 
-  # Auto-remount the USB mass storage when it reconnects after a glitch
-  # (e.g. kernel renames sda → sdb). Without this udev rule the mount
-  # goes stale and returns EIO until a manual umount + mount.
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_UUID}=="e59ec576-6efd-4f7f-bd91-b39b6b16ee46", \
-      RUN+="/run/current-system/sw/bin/systemctl --no-block restart mnt-mass.mount"
-  '';
-
   swapDevices = [];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
