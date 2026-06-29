@@ -15,6 +15,7 @@
   boot.initrd.kernelModules = [];
   boot.kernelModules = ["kvm-amd"];
   boot.extraModulePackages = [];
+  boot.kernelParams = ["usbcore.autosuspend=-1"];
 
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/55e6a024-d3a6-4827-b734-32f80119284e";
@@ -31,6 +32,14 @@
     fsType = "ext4";
     options = ["nofail" "defaults"];
   };
+
+  # Auto-remount the USB mass storage when it reconnects after a glitch
+  # (e.g. kernel renames sda → sdb). Without this udev rule the mount
+  # goes stale and returns EIO until a manual umount + mount.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_UUID}=="e59ec576-6efd-4f7f-bd91-b39b6b16ee46", \
+      RUN+="/run/current-system/sw/bin/systemctl --no-block restart mnt-mass.mount"
+  '';
 
   swapDevices = [];
 
