@@ -24,12 +24,15 @@
   networking.networkmanager.enable = true;
   networking = {
     interfaces = {
-      eno1.ipv4.addresses = [
-        {
-          address = "192.168.31.205";
-          prefixLength = 24;
-        }
-      ];
+      eno1 = {
+        ipv4.addresses = [
+          {
+            address = "192.168.31.205";
+            prefixLength = 24;
+          }
+        ];
+        wakeOnLan.enable = true;
+      };
     };
     defaultGateway = {
       interface = "eno1";
