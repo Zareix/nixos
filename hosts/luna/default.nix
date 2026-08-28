@@ -7,6 +7,7 @@
     docker.enable = true;
     tailscale.enable = true;
     dyndns.enable = true;
+    crowdsec.enable = true;
   };
 
   boot.loader.systemd-boot.enable = true;
