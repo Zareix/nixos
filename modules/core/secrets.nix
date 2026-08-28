@@ -4,6 +4,11 @@
     neededForUsers = true;
   };
 
+  sops.secrets."crowdsec-firewall-bouncer-api-key" = {
+    sopsFile = ../../secrets/common.yaml;
+    neededForUsers = true;
+  };
+
   sops.secrets.docker_config = {
     sopsFile = ../../secrets/home.yaml;
     path = "/home/${globals.username}/.docker/config.json";

@@ -19,7 +19,7 @@
     ncdu
     nettools
     nixd
-    nixfmt-classic
+    nixfmt
     nixos-generators
     openssh
     openssl
