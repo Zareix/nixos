@@ -18,7 +18,7 @@ in {
         mode = "nftables";
         api_url = "http://127.0.0.1:8080/";
       };
-      secrets.apiKeyPath = "/data/apps/crowdsec/bouncers/api.key";
+      secrets.apiKeyPath = config.sops.secrets."crowdsec-firewall-bouncer-api-key".path;
     };
   };
 }
