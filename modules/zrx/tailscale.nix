@@ -17,10 +17,6 @@ in {
 
     services.tailscale.extraUpFlags = ["--stateful-filtering=false"];
     services.tailscale.openFirewall = true;
-    services.resolved = {
-      extraConfig = ''
-        DNSStubListener=no
-      '';
-    };
+    services.resolved.settings.Resolve.DNSStubListener = false;
   };
 }
