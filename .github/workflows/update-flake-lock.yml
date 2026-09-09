@@ -22,7 +22,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Nix flake inputs
-        uses: DeterminateSystems/update-flake-lock@v28
+        uses: DeterminateSystems/update-flake-lock@v29
         with:
           pr-title: "chore(deps): update Nix flake inputs"
           pr-assignees: Zareix
