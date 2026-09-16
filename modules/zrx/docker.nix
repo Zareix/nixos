@@ -20,8 +20,19 @@ in {
     virtualisation.docker = {
       enable = true;
       package = cfg.dockerPkg;
+      liveRestore = true;
+      daemon.settings = {
+        dns = ["100.100.100.100" "1.1.1.1"];
+      };
     };
 
     users.users.${globals.username}.extraGroups = ["docker"];
+
+    systemd.services.docker = {
+      wants =
+        ["network-online.target"]
+        ++ lib.optional config.services.tailscale.enable "tailscaled.service";
+      after = ["network-online.target" "tailscaled.service"];
+    };
   };
 }

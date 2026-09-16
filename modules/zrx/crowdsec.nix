@@ -20,5 +20,12 @@ in {
       };
       secrets.apiKeyPath = config.sops.secrets."crowdsec-firewall-bouncer-api-key".path;
     };
+
+    systemd.services.crowdsec-firewall-bouncer = {
+      wants = ["docker.service"];
+      after = ["docker.service"];
+      serviceConfig = { Restart = "on-failure"; RestartSec = 15; };
+    };
+
   };
 }
