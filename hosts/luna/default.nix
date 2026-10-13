@@ -18,10 +18,10 @@
     "panic=10"
     "oops=panic"
   ];
-  systemd.extraConfig = ''
-    RuntimeWatchdogSec=30s
-    RebootWatchdogSec=10s
-  '';
+  systemd.settings.Manager = {
+    RuntimeWatchdogSec = "30s";
+    RebootWatchdogSec = "10s";
+  };
 
   services.xserver.xkb = {
     layout = "fr";
