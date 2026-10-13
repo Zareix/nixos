@@ -13,6 +13,16 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Auto-reboot if kernel panics or the system hangs headlessly
+  boot.kernelParams = [
+    "panic=10"
+    "oops=panic"
+  ];
+  systemd.extraConfig = ''
+    RuntimeWatchdogSec=30s
+    RebootWatchdogSec=10s
+  '';
+
   services.xserver.xkb = {
     layout = "fr";
     variant = "";
