@@ -18,7 +18,7 @@
     nano
     ncdu
     nettools
-    pkgs-unstable.opencode
+    # pkgs-unstable.opencode
     nixd
     nixfmt
     nixos-generators
