@@ -109,6 +109,11 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    # Le pool "dir" exige que son répertoire existe avant le preseed.
+    systemd.tmpfiles.rules = [
+      "d ${cfg.storageSource} 0711 root root -"
+    ];
+
     virtualisation.incus = {
       enable = true;
       preseed = {
