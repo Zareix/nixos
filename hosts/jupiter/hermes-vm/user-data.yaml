@@ -1,0 +1,24 @@
+#cloud-config
+# Invité Ubuntu LTS pour Hermes Agent.
+# Volontairement minimal : le gros du travail est fait par /root/provision.sh,
+# poussé et exécuté depuis l'hôte (systemd.services.hermes-vm-provision).
+
+timezone: Europe/Paris
+locale: fr_FR.UTF-8
+package_update: true
+package_upgrade: false
+
+# Pas de bloc `users:` : l'image officielle Ubuntu embarque déjà l'utilisateur
+# `ubuntu` (uid/gid 1000). provision.sh le renomme en `hermes` pour conserver
+# exactement l'uid 1000 qui possède /opt/data sur l'hôte (migration sans chown).
+# On n'a pas besoin de SSH pour administrer : tout passe par `incus exec`.
+
+packages:
+  - qemu-guest-agent
+  - ca-certificates
+  - curl
+  - git
+  - jq
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
