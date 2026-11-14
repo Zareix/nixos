@@ -1,15 +1,14 @@
 #cloud-config
-# Invité Debian (trixie) pour Hermes Agent — image cloud, sans aucune GUI.
-# Volontairement minimal : le reste est fait par /root/provision.sh, poussé et
-# exécuté depuis l'hôte (systemd.services.mercure-provision).
+# Invité Debian (trixie) pour mercure — image cloud, sans GUI.
+# Volontairement minimal : tout le reste (paquets utiles, Hermes, unité systemd,
+# montage de /opt/data) s'installe à la main, voir hosts/jupiter/mercure/README.md §2.
 
 timezone: Europe/Paris
 package_update: true
 package_upgrade: false
 
-# Pas de bloc `users:` : l'image cloud Debian fournit `debian` en uid/gid 1000.
-# provision.sh le renomme en `hermes` pour conserver exactement l'uid 1000 qui
-# possède /opt/data sur l'hôte (migration sans chown).
+# Pas de bloc `users:` : l'image cloud fournit `debian` en uid/gid 1000, ce qui
+# correspond exactement au propriétaire de /opt/data côté hôte (aucun chown).
 # Pas de SSH non plus : l'administration passe par `incus exec`.
 
 packages:
