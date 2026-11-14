@@ -3,11 +3,44 @@
 Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par
 **mercure**, une VM Incus **Debian 13 (trixie)** pilotée depuis ce flake.
 
-- **Déclaratif (ce repo)** : daemon incus, pool de stockage, bridge, réservation
-  DHCP, profil d'instance, UI web, cloud-init, création et démarrage de l'instance.
+- **Déclaratif (ce repo)** : le module générique `modules/zrx/incus.nix`
+  (`zrx.incus`) — daemon incus, pools, bridges, profils, réservation DHCP, UI web,
+  cloud-init, création et réconciliation des instances.
 - **Manuel (assumé)** : tout l'intérieur de la VM — paquets, Hermes, unité
   systemd, montage de `/opt/data`, Mnemosyne. Aucun script de provisioning n'est
   fourni : les étapes minimales sont en §2, à lancer une fois.
+
+## Module générique
+
+`modules/zrx/incus.nix` ne connaît pas Hermes : il expose `zrx.incus` (pools,
+réseaux, UI) et `zrx.incus.vms.<nom>` (image, cpu/mem, disque racine, volumes
+bloc, IP réservée, cloud-init). Tout ce qui est spécifique à mercure tient dans
+l'appel du host `hosts/jupiter/default.nix`, plus le `user-data.yaml` d'ici.
+
+```nix
+zrx.incus = {
+  enable = true;
+  storagePools.default.source = "/data/apps/incus";
+  networks.incusbr0.cidr = "10.42.0.0/24";
+  vms.mercure = {
+    image = "images:debian/13";
+    cpu = 4; memory = "6GiB"; rootSize = "60GiB";
+    pool = "default"; network = "incusbr0"; ip = "10.42.0.10";
+    userData = ./mercure/user-data.yaml;
+    dataVolumes = [{name = "mercure-data"; size = "120GiB";}];
+  };
+};
+```
+
+Une deuxième VM = une entrée de plus sous `vms`, une unité `incus-vm-<nom>`
+générée automatiquement. Limites à connaître :
+
+- `cpu`, `memory`, `autostart` sont **réconciliés à chaque rebuild** ;
+- `rootSize` et la taille des `dataVolumes` ne s'appliquent **qu'à la création**
+  (redimensionner est une opération incus manuelle) ;
+- le preseed n'est appliqué **qu'à l'initialisation d'incus** : ajouter un pool ou
+  un réseau plus tard ne crée rien, il faut `incus storage create` /
+  `incus network create` à la main.
 
 ## Pas de GUI
 
@@ -35,7 +68,7 @@ aucun snapd dans l'image.
 | Instance | `mercure` (VM, pas conteneur) |
 | Image | `images:debian/13` (incus-agent déjà présent → `incus exec` fonctionne) |
 | CPU / RAM | 4 vCPU / 6 GiB |
-| Pool | `mercure`, driver `dir`, source `/data/apps/incus` |
+| Pool | `default`, driver `dir`, source `/data/apps/incus` |
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP réservée `10.42.0.10` |
 | Disque données | volume bloc `mercure-data` (120 GiB), **non formaté** → `/opt/data` |
 
@@ -56,7 +89,7 @@ df -h /data/apps                    # ~150 G libres (sys + volume)
 
 ```sh
 git pull && nh os switch .
-systemctl status mercure            # création de l'instance au boot
+systemctl status incus-vm-mercure    # création/réconciliation de l'instance au boot
 incus list                          # mercure RUNNING, IP 10.42.0.10
 ```
 

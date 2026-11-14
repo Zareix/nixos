@@ -8,9 +8,21 @@
     tailscale.enable = true;
     # mercure : VM Debian pour Hermes Agent (remplace le conteneur Docker jupiter/hermes-agent).
     # Voir hosts/jupiter/mercure/README.md pour l'ordre des opérations.
-    mercure = {
+    incus = {
       enable = true;
-      userData = ./mercure/user-data.yaml;
+      storagePools.default.source = "/data/apps/incus";
+      networks.incusbr0.cidr = "10.42.0.0/24";
+      vms.mercure = {
+        image = "images:debian/13";
+        cpu = 4;
+        memory = "6GiB";
+        rootSize = "60GiB";
+        pool = "default";
+        network = "incusbr0";
+        ip = "10.42.0.10";
+        userData = ./mercure/user-data.yaml;
+        dataVolumes = [{name = "mercure-data"; size = "120GiB";}];
+      };
     };
     shareServer = {
       enable = true;
