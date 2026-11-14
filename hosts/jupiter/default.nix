@@ -1,4 +1,8 @@
 {
+  pkgs,
+  globals,
+  ...
+}: {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -20,7 +24,7 @@
         pool = "default";
         network = "incusbr0";
         ip = "10.42.0.10";
-        userData = ./mercure/user-data.yaml;
+        userData = pkgs.writeText "mercure-user-data.yaml" (import ./mercure/user-data.nix {inherit globals;});
         # Les données restent des fichiers sur jupiter (restic de l'hôte les voit
         # directement) ; le disque système seul vit dans le pool incus.
         shares = [

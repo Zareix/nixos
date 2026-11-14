@@ -7,7 +7,7 @@ Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par
   (`zrx.incus`) — daemon incus, pools, bridges, profils, réservation DHCP, UI web,
   cloud-init, partages de répertoires hôte, création et réconciliation des instances.
 - **Manuel (assumé)** : tout l'intérieur de la VM — paquets, Hermes, unité
-  systemd, Mnemosyne. Aucun script de provisioning n'est fourni : les étapes
+  systemd. Aucun script de provisioning n'est fourni : les étapes
   minimales sont en §2, à lancer une fois.
 
 ## Données : des fichiers de l'hôte, pas une image disque
@@ -24,7 +24,7 @@ choisit). Conséquences voulues :
 - un partage n'est **pas** snapshoté avec l'instance : la protection des données,
   c'est restic, pas le snapshot incus.
 
-**Risque accepté** : `state.db` et la base Mnemosyne (SQLite) vivent sur ce
+**Risque accepté** : `state.db` (SQLite) vit sur ce
 partage. SQLite attend des verrous POSIX et des `fsync` de disque local ; en
 virtiofs ça tient avec un seul écrivain, en 9p non. Choix assumé en échange de la
 simplicité du backup — à revoir si le gateway journalise des `disk I/O error`.
@@ -98,8 +98,7 @@ aucun snapd dans l'image.
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP réservée `10.42.0.10` |
 | Données | partage hôte `/data/apps/mercure` (uid/gid 1000) → `/opt/data` |
 
-`/opt/data` **garde le même chemin** que dans le conteneur : `config.yaml`, la base
-Mnemosyne, `state.db`, les skills et les chemins absolus continuent de fonctionner
+`/opt/data` **garde le même chemin** que dans le conteneur : `config.yaml`, `state.db`, les skills et les chemins absolus continuent de fonctionner
 sans réécriture.
 
 ## Ordre des opérations
@@ -157,47 +156,32 @@ ls -la /opt/data
 exit
 ```
 
-Puis l'installation officielle, en tant que `debian` (uid 1000, déjà présent dans
-l'image cloud) — c'est le chemin **Tier 1** :
+Puis l'installation officielle, en tant que `raphaelgc` — l'utilisateur de
+`vars.nix`, renommé depuis `debian` par cloud-init (uid 1000 conservé, donc
+propriétaire de `/opt/data`). C'est le chemin **Tier 1** :
 
 ```sh
-incus exec mercure -- su - debian -c \
+incus exec mercure -- su - raphaelgc -c \
   'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash'
 ```
 
-Pour que le gateway tourne en service, une unité suffit (adapter le chemin si
-`hermes` n'est pas dans `~/.local/bin`) :
+Le service est géré par l'installeur, pas à la main :
 
 ```sh
-incus exec mercure -- bash -s <<'EOF'
-cat >/etc/systemd/system/mercure-gateway.service <<'UNIT'
-[Unit]
-Description=Hermes Agent gateway
-After=network-online.target
-Wants=network-online.target
-RequiresMountsFor=/opt/data
+incus exec mercure -- env HERMES_HOME=/opt/data \
+  /home/raphaelgc/.local/bin/hermes gateway install --system \
+  --run-as-user raphaelgc --start-now
 
-[Service]
-Type=simple
-User=debian
-Group=debian
-Environment=HERMES_HOME=/opt/data
-Environment=HOME=/home/debian
-Environment=TZ=Europe/Paris
-WorkingDirectory=/opt/data
-ExecStart=/home/debian/.local/bin/hermes gateway run --replace
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-UNIT
-systemctl daemon-reload && systemctl enable --now mercure-gateway
-loginctl enable-linger debian
-EOF
+# linger : requis pour les cron jobs, même avec un service system
+incus exec mercure -- loginctl enable-linger raphaelgc
 ```
 
-`loginctl enable-linger` n'est pas cosmétique : les cron jobs Hermes tournent en
+`--system` installe une unité system-level (démarrage au boot, sans session
+ouverte), `--run-as-user` fixe l'utilisateur d'exécution et `HERMES_HOME` pointe
+sur l'état partagé. Adapter le chemin du binaire si `install.sh` ne l'a pas mis
+dans `~/.local/bin`.
+
+`loginctl enable-linger` reste nécessaire : les cron jobs Hermes tournent en
 `systemd-run --user --scope`, qui exige un gestionnaire de session pour l'uid.
 
 Le `.env` vit dans `HERMES_HOME`, donc `/opt/data/.env` — il arrive avec la
@@ -233,43 +217,13 @@ chown -R 1000:1000 "$DST"
 incus exec mercure -- systemctl restart mercure-gateway
 
 # d. vérifications
-incus exec mercure -- su - debian -c 'HERMES_HOME=/opt/data hermes doctor'
-incus exec mercure -- su - debian -c 'HERMES_HOME=/opt/data hermes memory status'
+incus exec mercure -- su - raphaelgc -c 'HERMES_HOME=/opt/data hermes doctor'
 ```
 
 Rollback tant que le conteneur existe : `docker start hermes-agent`. Ne le
 supprimer qu'après quelques jours d'usage réel.
 
-### 4. Mnemosyne (étape manuelle, une fois)
-
-Le quirk n'est pas lié à Docker : le provider doit vivre dans un side-venv,
-parce que Hermes bascule `sys.path` sur son environnement managé au démarrage.
-Après la migration, dans la VM :
-
-```sh
-incus exec mercure -- su - debian
-export PATH="$HOME/.local/bin:$PATH"
-
-# l'interpréteur réellement utilisé par le gateway
-HERMES_PYTHON=$(ps -eo args= | grep -o '/[^ ]*/venv/bin/python' | head -1)
-uv venv --seed --python "$HERMES_PYTHON" /opt/data/venvs/mnemosyne
-uv pip install --python /opt/data/venvs/mnemosyne/bin/python \
-  "mnemosyne-memory[embeddings]" mnemosyne-hermes
-HERMES_HOME=/opt/data MNEMOSYNE_DATA_DIR=/opt/data \
-  /opt/data/venvs/mnemosyne/bin/mnemosyne-hermes install --mode wrapper \
-  --python /opt/data/venvs/mnemosyne/bin/python
-hermes config set memory.provider mnemosyne
-exit
-
-incus exec mercure -- systemctl restart mercure-gateway
-incus exec mercure -- su - debian -c 'HERMES_HOME=/opt/data hermes memory status'
-# attendu : Plugin: installed ✓ / Status: available ✓
-```
-
-Si l'ancien `plugins/mnemosyne` est un lien symbolique vers un site-packages
-disparu, le supprimer avant l'étape `--mode wrapper`.
-
-### 5. Backup (côté jupiter, rien à changer dans la VM)
+### 4. Backup (côté jupiter, rien à changer dans la VM)
 
 Dans `Zareix/docker`, `jupiter/backup-jupiter/compose.yaml`, une seule ligne à
 ajouter aux `RESTIC_BACKUP_ARGS` :
@@ -282,14 +236,14 @@ Le reste est déjà bon : les sources sont `/data`, donc `/data/apps/mercure` (l
 données réelles, quelques Go) est sauvegardé en incrémental, et le pool incus
 (disque système de la VM) est ignoré.
 
-### 6. Accès réseau
+### 5. Accès réseau
 
 - Dashboard en tailnet-only sous `zrx.sh` (convention maison) : installer tailscale
   dans la VM, `tailscale up`, puis router Traefik vers `10.42.0.10:9119`.
 - Traefik ne peut plus lire les labels Docker : la route devient statique
   (fichier de provider) — c'est la seule régression fonctionnelle du passage en VM.
 
-### 7. UI web d'Incus
+### 6. UI web d'Incus
 
 Le module active `virtualisation.incus.ui` (`incus-ui-canonical`) et publie
 `core.https_address` sur le port 8443, **ouvert uniquement sur `tailscale0`**
