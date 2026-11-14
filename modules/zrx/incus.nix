@@ -47,6 +47,19 @@
     '')
     vm.dataVolumes;
 
+  # Partages de répertoires de l'hôte montés dans l'invité (9p ou virtiofs).
+  # Les fichiers restent lisibles sur l'hôte : un restic hôte les sauvegarde
+  # normalement, sans lire d'image disque.
+  roFlag = share: lib.optionalString share.readOnly " readonly=true";
+
+  shareSetup = name: vm:
+    lib.concatMapStringsSep "\n" (share: ''
+      ${incus} config device list "$name" | ${grep} -qx "${share.name}" \
+        || ${incus} config device add "$name" ${share.name} disk source=${share.source} path=${share.path}${roFlag share} \
+        || echo "ATTENTION : partage ${share.name} non monté dans $name"
+    '')
+    vm.shares;
+
   # Réservation DHCP : la sous-commande dépend de la version d'incus.
   ipSetup = vm:
     if vm.ip == null
@@ -86,6 +99,7 @@
       ${incus} config set "$name" boot.autostart=${lib.boolToString vm.autostart}
 
       ${volumeSetup name vm}
+      ${shareSetup name vm}
       ${ipSetup vm}
 
       ${incus} start "$name" || true
@@ -204,6 +218,46 @@ in {
               instance config (`incus config show`, `incus export`).
             '';
           };
+          shares = lib.mkOption {
+            type = lib.types.listOf (lib.types.submodule {
+              options = {
+                name = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Device name (must be unique inside the instance).";
+                };
+                source = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Directory on the host to expose. Created if missing.";
+                };
+                path = lib.mkOption {
+                  type = lib.types.str;
+                  description = "Mount point inside the guest.";
+                };
+                readOnly = lib.mkOption {
+                  type = lib.types.bool;
+                  default = false;
+                  description = "Expose the share read-only to the guest.";
+                };
+                uid = lib.mkOption {
+                  type = lib.types.int;
+                  default = 1000;
+                  description = "Owner of the source directory on the host.";
+                };
+                gid = lib.mkOption {
+                  type = lib.types.int;
+                  default = 1000;
+                  description = "Group of the source directory on the host.";
+                };
+              };
+            });
+            default = [];
+            description = ''
+              Host directories shared into the guest (9p or virtiofs, incus
+              decides). The data stays plain files on the host, so a host-side
+              backup tool can read it directly.
+            '';
+          };
+
           dataVolumes = lib.mkOption {
             type = lib.types.listOf (lib.types.submodule {
               options = {
@@ -235,7 +289,13 @@ in {
     # Les pools "dir" exigent que leur répertoire existe avant le preseed.
     systemd.tmpfiles.rules =
       lib.mapAttrsToList (name: pool: "d ${pool.source} 0711 root root -")
-      cfg.storagePools;
+      cfg.storagePools
+      ++ lib.concatLists (lib.mapAttrsToList (
+          _: vm:
+            map (share: "d ${share.source} 0750 ${toString share.uid} ${toString share.gid} -")
+            vm.shares
+        )
+        cfg.vms);
 
     virtualisation.incus = {
       enable = true;

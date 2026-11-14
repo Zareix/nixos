@@ -5,17 +5,41 @@ Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par
 
 - **Déclaratif (ce repo)** : le module générique `modules/zrx/incus.nix`
   (`zrx.incus`) — daemon incus, pools, bridges, profils, réservation DHCP, UI web,
-  cloud-init, création et réconciliation des instances.
+  cloud-init, partages de répertoires hôte, création et réconciliation des instances.
 - **Manuel (assumé)** : tout l'intérieur de la VM — paquets, Hermes, unité
-  systemd, montage de `/opt/data`, Mnemosyne. Aucun script de provisioning n'est
-  fourni : les étapes minimales sont en §2, à lancer une fois.
+  systemd, Mnemosyne. Aucun script de provisioning n'est fourni : les étapes
+  minimales sont en §2, à lancer une fois.
+
+## Données : des fichiers de l'hôte, pas une image disque
+
+`/opt/data` **n'est pas un volume incus** : c'est un partage du répertoire hôte
+`/data/apps/mercure`, monté dans la VM par l'agent invité (9p ou virtiofs, incus
+choisit). Conséquences voulues :
+
+- les données restent **des fichiers lisibles sur jupiter** → le restic de l'hôte
+  les sauvegarde normalement, en incrémental, sans lire d'image de plusieurs
+  dizaines de Go ;
+- le disque système de la VM vit dans le pool `/data/apps/incus`, **exclu du
+  backup** (il est reconstructible depuis ce flake) ;
+- un partage n'est **pas** snapshoté avec l'instance : la protection des données,
+  c'est restic, pas le snapshot incus.
+
+**Risque accepté** : `state.db` et la base Mnemosyne (SQLite) vivent sur ce
+partage. SQLite attend des verrous POSIX et des `fsync` de disque local ; en
+virtiofs ça tient avec un seul écrivain, en 9p non. Choix assumé en échange de la
+simplicité du backup — à revoir si le gateway journalise des `disk I/O error`.
+
+Corollaire : restic lit une base **vivante** (il ne prend pas les verrous SQLite),
+donc une restauration peut échouer au `integrity_check`. Si ça arrive, la parade
+est un `sqlite3 /opt/data/state.db "VACUUM INTO /data/apps/mercure/db-dump/state.db"`
+juste avant le cron, sans rien changer d'autre.
 
 ## Module générique
 
 `modules/zrx/incus.nix` ne connaît pas Hermes : il expose `zrx.incus` (pools,
-réseaux, UI) et `zrx.incus.vms.<nom>` (image, cpu/mem, disque racine, volumes
-bloc, IP réservée, cloud-init). Tout ce qui est spécifique à mercure tient dans
-l'appel du host `hosts/jupiter/default.nix`, plus le `user-data.yaml` d'ici.
+réseaux, UI) et `zrx.incus.vms.<nom>` (image, cpu/mem, disque racine, partages,
+volumes bloc, IP réservée, cloud-init). Tout ce qui est spécifique à mercure tient
+dans l'appel du host `hosts/jupiter/default.nix`, plus le `user-data.yaml` d'ici.
 
 ```nix
 zrx.incus = {
@@ -27,7 +51,7 @@ zrx.incus = {
     cpu = 4; memory = "6GiB"; rootSize = "60GiB";
     pool = "default"; network = "incusbr0"; ip = "10.42.0.10";
     userData = ./mercure/user-data.yaml;
-    dataVolumes = [{name = "mercure-data"; size = "120GiB";}];
+    shares = [{name = "data"; source = "/data/apps/mercure"; path = "/opt/data";}];
   };
 };
 ```
@@ -35,12 +59,14 @@ zrx.incus = {
 Une deuxième VM = une entrée de plus sous `vms`, une unité `incus-vm-<nom>`
 générée automatiquement. Limites à connaître :
 
-- `cpu`, `memory`, `autostart` sont **réconciliés à chaque rebuild** ;
+- `cpu`, `memory`, `autostart`, présence des partages et des volumes sont
+  **réconciliés à chaque rebuild** ;
 - `rootSize` et la taille des `dataVolumes` ne s'appliquent **qu'à la création**
   (redimensionner est une opération incus manuelle) ;
 - le preseed n'est appliqué **qu'à l'initialisation d'incus** : ajouter un pool ou
   un réseau plus tard ne crée rien, il faut `incus storage create` /
-  `incus network create` à la main.
+  `incus network create` à la main ;
+- les `shares` ne sont pas inclus dans les snapshots de l'instance.
 
 ## Pas de GUI
 
@@ -63,14 +89,14 @@ aucun snapd dans l'image.
 
 ## Ce que le module crée
 
-| Ressource | Valeur par défaut |
+| Ressource | Valeur |
 |---|---|
 | Instance | `mercure` (VM, pas conteneur) |
 | Image | `images:debian/13` (incus-agent déjà présent → `incus exec` fonctionne) |
 | CPU / RAM | 4 vCPU / 6 GiB |
-| Pool | `default`, driver `dir`, source `/data/apps/incus` |
+| Pool | `default`, driver `dir`, source `/data/apps/incus` (disque système seulement) |
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP réservée `10.42.0.10` |
-| Disque données | volume bloc `mercure-data` (120 GiB), **non formaté** → `/opt/data` |
+| Données | partage hôte `/data/apps/mercure` (uid/gid 1000) → `/opt/data` |
 
 `/opt/data` **garde le même chemin** que dans le conteneur : `config.yaml`, la base
 Mnemosyne, `state.db`, les skills et les chemins absolus continuent de fonctionner
@@ -82,7 +108,7 @@ sans réécriture.
 
 ```sh
 ls -l /dev/kvm                      # sans KVM, --vm tombe en émulation : stop
-df -h /data/apps                    # ~150 G libres (sys + volume)
+df -h /data/apps                    # ~80 G libres (disque système de la VM)
 ```
 
 ### 1. Activer et construire
@@ -108,11 +134,8 @@ apt-get update && apt-get install -y --no-install-recommends \
 #    les chemins absolus que contient déjà config.yaml
 npm install -g donsetch@5.2.1 bladebro@4.6.8
 
-# d. disque de données (le volume est créé par le module, pas formaté)
-mkfs.ext4 -L mercure-data /dev/vdb
-mkdir -p /opt/data && mount /dev/vdb /opt/data
-echo 'LABEL=mercure-data /opt/data ext4 defaults,nofail 0 2' >> /etc/fstab
-chown 1000:1000 /opt/data          # uid 1000 = debian dans l'invité
+# d. /opt/data est déjà monté (partage de /data/apps/mercure)
+ls -la /opt/data
 
 exit
 ```
@@ -161,40 +184,40 @@ EOF
 `systemd-run --user --scope`, qui exige un gestionnaire de session pour l'uid.
 
 Le `.env` vit dans `HERMES_HOME`, donc `/opt/data/.env` — il arrive avec la
-migration (§3). Pour une VM neuve, le copier à la main :
+migration (§3). Pour une VM neuve, l'écrire directement sur l'hôte :
 
 ```sh
-incus file push /chemin/vers/.env mercure/opt/data/.env --mode 0600
+install -m 0600 -o 1000 -g 1000 /chemin/vers/.env /data/apps/mercure/.env
 ```
 
 ### 3. Migrer l'état du conteneur (manuel, volontairement hors du repo)
 
-Aucun script n'est fourni pour cette étape : elle se lance à la main, une fois,
-depuis jupiter. Le conteneur est **arrêté, jamais supprimé** — `docker start
-hermes-agent` suffit à revenir en arrière.
+Aucun script n'est fourni : à lancer à la main, une fois, depuis jupiter. Comme
+`/opt/data` **est** un répertoire de l'hôte, la migration ne traverse plus la VM.
+Le conteneur est **arrêté, jamais supprimé**.
 
 ```sh
 SRC=/data/apps/hermes-agent
-INSTANCE=mercure
+DST=/data/apps/mercure
 
-# a. le conteneur doit être arrêté pour un état cohérent (state.db / SQLite)
+# a. état cohérent : on arrête le conteneur (state.db / SQLite)
 docker stop hermes-agent
 
-# b. copie avec uid/gid numériques préservés (1000 = debian dans l'invité) ;
-#    on exclut ce qui embarque des chemins d'interpréteur du conteneur
-tar -C "$SRC" --numeric-owner -cf - \
-    --exclude=./venvs --exclude=./installs --exclude=./.venv \
-    --exclude=./.npm-global --exclude=./home/.npm --exclude=./webui/cache . \
-  | incus exec "$INSTANCE" -- tar -C /opt/data --numeric-owner -xf -
+# b. copie directe, uid/gid préservés ; on exclut ce qui embarque des chemins
+#    d'interpréteur du conteneur
+rsync -aH --numeric-ids \
+  --exclude 'venvs/' --exclude 'installs/' --exclude '.venv/' \
+  --exclude '.npm-global/' --exclude 'home/.npm/' --exclude 'webui/cache/' \
+  "$SRC"/ "$DST"/
 
-# c. permissions + redémarrage
-incus exec "$INSTANCE" -- chown -R 1000:1000 /opt/data
-incus exec "$INSTANCE" -- chmod 0750 /opt/data
-incus exec "$INSTANCE" -- systemctl restart mercure-gateway
+chown -R 1000:1000 "$DST"
+
+# c. redémarrage dans la VM
+incus exec mercure -- systemctl restart mercure-gateway
 
 # d. vérifications
-incus exec "$INSTANCE" -- su - debian -c 'HERMES_HOME=/opt/data hermes doctor'
-incus exec "$INSTANCE" -- su - debian -c 'HERMES_HOME=/opt/data hermes memory status'
+incus exec mercure -- su - debian -c 'HERMES_HOME=/opt/data hermes doctor'
+incus exec mercure -- su - debian -c 'HERMES_HOME=/opt/data hermes memory status'
 ```
 
 Rollback tant que le conteneur existe : `docker start hermes-agent`. Ne le
@@ -229,14 +252,27 @@ incus exec mercure -- su - debian -c 'HERMES_HOME=/opt/data hermes memory status
 Si l'ancien `plugins/mnemosyne` est un lien symbolique vers un site-packages
 disparu, le supprimer avant l'étape `--mode wrapper`.
 
-### 5. Accès réseau
+### 5. Backup (côté jupiter, rien à changer dans la VM)
+
+Dans `Zareix/docker`, `jupiter/backup-jupiter/compose.yaml`, une seule ligne à
+ajouter aux `RESTIC_BACKUP_ARGS` :
+
+```
+--exclude /data/apps/incus/**
+```
+
+Le reste est déjà bon : les sources sont `/data`, donc `/data/apps/mercure` (les
+données réelles, quelques Go) est sauvegardé en incrémental, et le pool incus
+(disque système de la VM) est ignoré.
+
+### 6. Accès réseau
 
 - Dashboard en tailnet-only sous `zrx.sh` (convention maison) : installer tailscale
   dans la VM, `tailscale up`, puis router Traefik vers `10.42.0.10:9119`.
 - Traefik ne peut plus lire les labels Docker : la route devient statique
   (fichier de provider) — c'est la seule régression fonctionnelle du passage en VM.
 
-### 6. UI web d'Incus
+### 7. UI web d'Incus
 
 Le module active `virtualisation.incus.ui` (`incus-ui-canonical`) et publie
 `core.https_address` sur le port 8443, **ouvert uniquement sur `tailscale0`**
@@ -267,20 +303,24 @@ certificat, `virtualisation.incus.useACMEHost` existe (Let's Encrypt via
   `apt` + `npm -g` fonctionnent.
 - Plus de mapping UID 1000 ni de hook s6.
 - Isolation réelle : root dans la VM, aucun accès à jupiter.
+- Backup inchangé : les données restent des fichiers sur jupiter.
 
 ## Rollback
 
 | Incident | Action |
 |---|---|
-| La VM ne démarre plus | `incus snapshot restore mercure <snap>` (snapshot avant chaque changement) |
+| La VM ne démarre plus | `incus snapshot restore mercure <snap>` (disque système ; `/opt/data` vit sur l'hôte) |
+| Données abîmées | restauration restic de `/data/apps/mercure` |
 | Hermes cassé après migration | `docker start hermes-agent` (état intact) |
-| Module à retirer | `enable = false` + `nh os switch .` (l'instance et son volume survivent) |
+| Module à retirer | `enable = false` + `nh os switch .` (l'instance survit, `/opt/data` aussi) |
 
 ## Points non vérifiés
 
 - `/dev/kvm` sur jupiter (à contrôler avant tout).
 - `incus config device set|override eth0 ipv4.address` : la commande qui marche
   dépend de la version d'incus ; le module essaie les deux et avertit.
-- SQLite doit rester sur le volume bloc (pas de virtiofs) — c'est le cas ici.
+- Protocole du partage (9p ou virtiofs) : c'est incus qui décide. À vérifier au
+  premier boot (`incus info mercure`, puis `mount | grep /opt/data` dans la VM) —
+  en 9p, SQLite sur `/opt/data` est franchement risqué.
 - Le chemin de `hermes` après `install.sh` (`~/.local/bin/hermes`) : à confirmer
   au premier passage, l'unité systemd le suppose.

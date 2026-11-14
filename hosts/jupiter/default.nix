@@ -21,7 +21,15 @@
         network = "incusbr0";
         ip = "10.42.0.10";
         userData = ./mercure/user-data.yaml;
-        dataVolumes = [{name = "mercure-data"; size = "120GiB";}];
+        # Les données restent des fichiers sur jupiter (restic de l'hôte les voit
+        # directement) ; le disque système seul vit dans le pool incus.
+        shares = [
+          {
+            name = "data";
+            source = "/data/apps/mercure";
+            path = "/opt/data";
+          }
+        ];
       };
     };
     shareServer = {
