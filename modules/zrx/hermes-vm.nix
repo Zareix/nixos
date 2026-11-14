@@ -19,7 +19,7 @@
     else "${incus} file push ${cfg.envFile} \"$name/root/hermes.env\" --mode 0600";
 in {
   options.zrx.hermesVm = {
-    enable = lib.mkEnableOption "Hermes Agent running in an Incus VM with an Ubuntu LTS guest";
+    enable = lib.mkEnableOption "Hermes Agent running in an Incus VM with a Debian guest";
 
     name = lib.mkOption {
       type = lib.types.str;
@@ -29,7 +29,7 @@ in {
 
     image = lib.mkOption {
       type = lib.types.str;
-      default = "images:ubuntu/24.04";
+      default = "images:debian/13";
       description = "Incus image for the guest. Must come from the images: remote so the incus-agent is preinstalled.";
     };
 

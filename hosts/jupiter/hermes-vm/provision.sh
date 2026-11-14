@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Provisionne l'invité Ubuntu pour Hermes Agent.
+# Provisionne l'invité Debian pour Hermes Agent.
 # Exécuté en root DANS la VM, poussé et lancé par systemd.services.hermes-vm-provision.
 # Idempotent : relançable à tout moment (aucune donnée n'est écrasée).
 set -euo pipefail
@@ -18,23 +18,14 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends \
   ca-certificates curl git gh jq unzip xz-utils rsync \
-  fonts-liberation ffmpeg \
+  chromium fonts-liberation ffmpeg \
   nodejs npm \
   build-essential python3 python3-venv python3-pip \
   tzdata sudo >/dev/null
 
-# Ubuntu 24.04 ne distribue chromium que via snap : best-effort, bladebro
-# embarque de toute façon son propre Chromium.
-log "chromium (snap)"
-if command -v snap >/dev/null 2>&1; then
-  snap list chromium >/dev/null 2>&1 || snap install chromium || true
-else
-  echo "snapd absent : installer google-chrome-stable si un Chromium système est requis" >&2
-fi
-
-# Outils MCP : mêmes chemins absolus que dans le conteneur, donc la config
-# existante (~/.hermes/config.yaml) reste valide. npm -g en root -> /usr/local.
-log "donsetch + bladebro (npm -g)"
+# chromium est un vrai .deb sur Debian (pas de snap comme sur Ubuntu) : c'est
+# celui que bladebro et donsetch utilisent, avec le sandbox système autorisé.
+log "outils MCP : chemins absolus identiques au conteneur (config.yaml valide)"
 npm install -g --silent "donsetch@5.2.1" "bladebro@4.6.8" \
   || echo "ATTENTION : échec npm -g (vérifier la version de node, >= 20 si besoin)" >&2
 
@@ -61,15 +52,20 @@ grep -q "LABEL=$DATA_LABEL" /etc/fstab \
   || echo "LABEL=$DATA_LABEL $DATA_MOUNT ext4 defaults,nofail 0 2" >>/etc/fstab
 
 log "utilisateur $HERMES_USER (uid $HERMES_UID)"
-# L'image Ubuntu fournit `ubuntu` en uid 1000 : on le renomme plutôt que d'en
-# créer un second, pour que les fichiers migrés (uid 1000) restent accessibles.
+# Les images cloud Debian/Ubuntu fournissent un utilisateur par défaut en
+# uid/gid 1000 (`debian` / `ubuntu`) : on le renomme plutôt que d'en créer un
+# second, pour que les fichiers migrés (uid 1000) restent accessibles sans chown.
 if ! id "$HERMES_USER" >/dev/null 2>&1; then
-  if id ubuntu >/dev/null 2>&1; then
-    usermod -l "$HERMES_USER" -d "/home/$HERMES_USER" -m ubuntu
-    groupmod -n "$HERMES_USER" ubuntu
-  else
-    useradd -m -U -u "$HERMES_UID" -s /bin/bash "$HERMES_USER"
-  fi
+  for default_user in debian ubuntu; do
+    if id "$default_user" >/dev/null 2>&1; then
+      usermod -l "$HERMES_USER" -d "/home/$HERMES_USER" -m "$default_user"
+      groupmod -n "$HERMES_USER" "$default_user"
+      break
+    fi
+  done
+fi
+if ! id "$HERMES_USER" >/dev/null 2>&1; then
+  useradd -m -U -u "$HERMES_UID" -s /bin/bash "$HERMES_USER"
 fi
 usermod -s /bin/bash -aG sudo "$HERMES_USER" 2>/dev/null || true
 install -d -m 0755 /etc/sudoers.d

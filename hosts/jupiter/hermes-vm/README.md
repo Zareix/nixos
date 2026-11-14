@@ -1,7 +1,7 @@
-# Hermes Agent en VM Ubuntu sur jupiter
+# Hermes Agent en VM Debian sur jupiter
 
 Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par une VM
-Incus **Ubuntu 24.04** pilotée depuis ce flake.
+Incus **Debian 13 (trixie)** pilotée depuis ce flake.
 
 - **Déclaratif (ce repo)** : daemon incus, pool de stockage, bridge, réservation DHCP,
   cloud-init, script de provisioning, unités systemd de création/provisioning,
@@ -10,12 +10,31 @@ Incus **Ubuntu 24.04** pilotée depuis ce flake.
   C'est le prix de la flexibilité ; la compensation est le snapshot incus avant
   chaque changement.
 
+## Pas de GUI
+
+L'image cloud Debian est **headless** : aucun serveur graphique, aucun X/Wayland,
+aucun environnement de bureau n'est installé, ni par l'image ni par
+`provision.sh`. Il n'y a donc pas d'écran dans la VM, seulement :
+
+- `incus exec hermes -- …` (agent invité) ;
+- la console série via l'UI web d'Incus ;
+- les ports HTTP servis par Hermes (dashboard `9119`, API `8642`), qui sont des
+  pages web, pas une session graphique.
+
+Chromium y tourne uniquement en mode headless (bladebro / donsetch). Conséquence :
+`hermes desktop` (Electron) ne peut pas être lancé **dans** la VM — l'app desktop
+se connecte à distance au backend (`backend.mode`), elle reste sur ton poste.
+
+Debian plutôt qu'Ubuntu : `chromium` y est un vrai `.deb` (sur Ubuntu 24.04 c'est
+un snap), `gh` est packagé (2.46), node 20 est suffisant pour les MCP, et il n'y a
+aucun snapd dans l'image.
+
 ## Ce que le module crée
 
 | Ressource | Valeur par défaut |
 |---|---|
 | Instance | `hermes` (VM, pas conteneur) |
-| Image | `images:ubuntu/24.04` (incus-agent déjà présent → `incus exec` fonctionne) |
+| Image | `images:debian/13` (incus-agent déjà présent → `incus exec` fonctionne) |
 | CPU / RAM | 4 vCPU / 6 GiB |
 | Pool | `hermes`, driver `dir`, source `/data/apps/incus` |
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP réservée `10.42.0.10` |
@@ -65,14 +84,38 @@ incus list                                          # hermes RUNNING, IP 10.42.0
 incus exec hermes -- journalctl -u hermes-gateway -f
 ```
 
-### 3. Migrer l'état du conteneur
+### 3. Migrer l'état du conteneur (manuel, volontairement hors du repo)
+
+Aucun script n'est fourni pour cette étape : elle se lance à la main, une fois,
+depuis jupiter. Le conteneur est **arrêté, jamais supprimé** — `docker start
+hermes-agent` suffit à revenir en arrière.
 
 ```sh
-sudo bash hosts/jupiter/hermes-vm/migrate.sh
+SRC=/data/apps/hermes-agent
+INSTANCE=hermes
+
+# a. le conteneur doit être arrêté pour un état cohérent (state.db / SQLite)
+docker stop hermes-agent
+
+# b. copie avec uid/gid numériques préservés (1000 = hermes des deux côtés) ;
+#    on exclut ce qui embarque des chemins d'interpréteur du conteneur
+tar -C "$SRC" --numeric-owner -cf - \
+    --exclude=./venvs --exclude=./installs --exclude=./.venv \
+    --exclude=./.npm-global --exclude=./home/.npm --exclude=./webui/cache . \
+  | incus exec "$INSTANCE" -- tar -C /opt/data --numeric-owner -xf -
+
+# c. permissions + redémarrage
+incus exec "$INSTANCE" -- chown -R 1000:1000 /opt/data
+incus exec "$INSTANCE" -- chmod 0750 /opt/data
+incus exec "$INSTANCE" -- systemctl restart hermes-gateway
+
+# d. vérifications
+incus exec "$INSTANCE" -- su - hermes -c 'HERMES_HOME=/opt/data hermes doctor'
+incus exec "$INSTANCE" -- su - hermes -c 'HERMES_HOME=/opt/data hermes memory status'
 ```
 
-Le conteneur est **arrêté, pas supprimé** : `docker start hermes-agent` suffit à
-revenir en arrière.
+Rollback tant que le conteneur existe : `docker start hermes-agent`. Ne le
+supprimer qu'après quelques jours d'usage réel.
 
 ### 4. Mnemosyne (étape manuelle, une fois)
 
@@ -124,20 +167,21 @@ ssh jupiter incus config trust add admin
 # puis : https://jupiter.<tailnet>.ts.net:8443/ui/
 ```
 
+C'est une UI **d'hyperviseur** (liste des instances, console série, snapshots,
+volumes, profils) servie par jupiter — pas une session graphique dans la VM.
+
 Certificat auto-signé par défaut (avertissement navigateur) ; pour un vrai
 certificat, `virtualisation.incus.useACMEHost` existe (Let's Encrypt via
 `security.acme.certs`, non configuré ici).
 
-L'UI donne : liste des instances, console série de la VM, snapshots, volumes,
-profils, métriques. Elle ne remplace pas `incus exec` pour le travail courant.
-
 ## Ce que la VM règle
 
-- Chromium avec sandbox réel (les user namespaces fonctionnent dans la VM) :
-  plus de `--no-sandbox`, plus de `DONGHOST_NO_SANDBOX`.
+- Chromium avec sandbox réel (les user namespaces fonctionnent dans la VM), et un
+  paquet `chromium` Debian maintenu : plus de `--no-sandbox`, plus de
+  `DONGHOST_NO_SANDBOX`, plus de snap.
 - `hermes update` fonctionnel (contrairement à l'install Docker).
-- Plus de DirtyFile : ni `gh`, ni `pnpm`, ni binaire donsetch root-owned à installer
-  au build — `apt` + `npm -g` fonctionnent.
+- Ni `gh`, ni `pnpm`, ni binaire donsetch root-owned à installer au build :
+  `apt` + `npm -g` fonctionnent.
 - Plus de mapping UID 1000 ni de hook s6.
 - Isolation réelle : root dans la VM, aucun accès à jupiter.
 
