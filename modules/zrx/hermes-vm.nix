@@ -57,6 +57,24 @@ in {
       description = "Directory backing the pool.";
     };
 
+    ui = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Serve the Incus web UI (incus-ui-canonical) on /ui/.";
+      };
+      port = lib.mkOption {
+        type = lib.types.port;
+        default = 8443;
+        description = "TLS port for the Incus API and web UI.";
+      };
+      tailnetOnly = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Only open the UI port on tailscale0 (règle zrx.sh : privé = tailnet).";
+      };
+    };
+
     dataSize = lib.mkOption {
       type = lib.types.str;
       default = "120GiB";
@@ -116,7 +134,13 @@ in {
 
     virtualisation.incus = {
       enable = true;
+      ui.enable = cfg.ui.enable;
       preseed = {
+        # incusd n'écoute que sur le socket unix par défaut : l'UI (comme l'API
+        # distante) exige core.https_address.
+        config = lib.optionalAttrs cfg.ui.enable {
+          "core.https_address" = "0.0.0.0:${toString cfg.ui.port}";
+        };
         storage_pools = [
           {
             name = cfg.storagePool;
@@ -160,6 +184,11 @@ in {
 
     # Le client incus pour l'admin humain (groupe incus-admin).
     users.users.${globals.username}.extraGroups = ["incus-admin"];
+
+    # UI + API : jamais sur le LAN, uniquement via le tailnet (convention zrx.sh).
+    networking.firewall.interfaces = lib.mkIf (cfg.ui.enable && cfg.ui.tailnetOnly) {
+      tailscale0.allowedTCPPorts = [cfg.ui.port];
+    };
 
     # 1. Création de l'instance (une seule fois) puis démarrage.
     systemd.services.hermes-vm = {

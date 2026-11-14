@@ -110,6 +110,27 @@ disparu, le supprimer avant l'étape `--mode wrapper`.
 - Traefik ne peut plus lire les labels Docker : la route devient statique
   (fichier de provider) — c'est la seule régression fonctionnelle du passage en VM.
 
+### 6. UI web d'Incus
+
+Le module active `virtualisation.incus.ui` (`incus-ui-canonical`) et publie
+`core.https_address` sur le port 8443, **ouvert uniquement sur `tailscale0`**
+(`ui.tailnetOnly = true`, désactivable).
+
+```sh
+# une fois, pour autoriser un navigateur
+ssh jupiter incus config trust add admin
+#   -> coller le token affiché dans l'UI
+
+# puis : https://jupiter.<tailnet>.ts.net:8443/ui/
+```
+
+Certificat auto-signé par défaut (avertissement navigateur) ; pour un vrai
+certificat, `virtualisation.incus.useACMEHost` existe (Let's Encrypt via
+`security.acme.certs`, non configuré ici).
+
+L'UI donne : liste des instances, console série de la VM, snapshots, volumes,
+profils, métriques. Elle ne remplace pas `incus exec` pour le travail courant.
+
 ## Ce que la VM règle
 
 - Chromium avec sandbox réel (les user namespaces fonctionnent dans la VM) :
