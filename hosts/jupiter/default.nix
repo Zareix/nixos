@@ -11,9 +11,6 @@
     mercure = {
       enable = true;
       userData = ./mercure/user-data.yaml;
-      provisionScript = ./mercure/provision.sh;
-      # envFile = config.sops.secrets."mercure-env".path;
-      #   -> nécessite { config, ... }: en tête de fichier + la clé dans secrets/common.yaml
     };
     shareServer = {
       enable = true;

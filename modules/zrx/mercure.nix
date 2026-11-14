@@ -13,10 +13,6 @@
   networkGateway = let
     first3 = lib.take 3 (lib.splitString "." (lib.head (lib.splitString "/" cfg.networkCidr)));
   in "${lib.concatStringsSep "." first3}.1/24";
-  pushEnv =
-    if cfg.envFile == null
-    then "echo 'envFile non configuré : /etc/mercure/env ne sera pas poussé'"
-    else "${incus} file push ${cfg.envFile} \"$name/root/hermes.env\" --mode 0600";
 in {
   options.zrx.mercure = {
     enable = lib.mkEnableOption "Hermes Agent running in an Incus VM with a Debian guest";
@@ -110,20 +106,9 @@ in {
       description = "cloud-init user-data file for the guest.";
     };
 
-    provisionScript = lib.mkOption {
-      type = lib.types.path;
-      description = "Script pushed into the guest and run as root (idempotent).";
-    };
-
-    envFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = ''
-        Host path of the decrypted dotenv file pushed to the guest as
-        /etc/mercure/env. Typically `config.sops.secrets."mercure-env".path`.
-        Leave null until the sops key exists, otherwise activation fails.
-      '';
-    };
+    # Pas de provisioning automatisé : l'intérieur de la VM (paquets, Hermes,
+    # unité systemd) s'installe à la main. Les étapes minimales sont dans
+    # hosts/jupiter/mercure/README.md.
   };
 
   config = lib.mkIf cfg.enable {
@@ -228,35 +213,6 @@ in {
         fi
 
         ${incus} start "$name" || true
-      '';
-    };
-
-    # 2. Provisioning : attend cloud-init, pousse les scripts, exécute.
-    systemd.services.mercure-provision = {
-      description = "Provision the Hermes VM (packages, /opt/data, Hermes install)";
-      wantedBy = ["multi-user.target"];
-      wants = ["mercure.service"];
-      after = ["mercure.service" "network-online.target"];
-      path = [pkgs.coreutils pkgs.gnugrep];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        TimeoutStartSec = "3600";
-      };
-      script = ''
-        set -euo pipefail
-        name=${cfg.name}
-
-        # le premier boot (agent + cloud-init) prend une minute ou deux
-        for _ in $(seq 1 60); do
-          if ${incus} exec "$name" -- true >/dev/null 2>&1; then break; fi
-          sleep 5
-        done
-        ${incus} exec "$name" -- cloud-init status --wait >/dev/null 2>&1 || true
-
-        ${incus} file push ${cfg.provisionScript} "$name/root/provision.sh" --mode 0755
-        ${pushEnv}
-        ${incus} exec "$name" -- bash /root/provision.sh
       '';
     };
   };
