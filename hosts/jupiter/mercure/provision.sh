@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Provisionne l'invité Debian pour Hermes Agent.
-# Exécuté en root DANS la VM, poussé et lancé par systemd.services.hermes-vm-provision.
+# Exécuté en root DANS la VM, poussé et lancé par systemd.services.mercure-provision.
 # Idempotent : relançable à tout moment (aucune donnée n'est écrasée).
 set -euo pipefail
 
-HERMES_USER=hermes
+HERMES_USER=mercure
 HERMES_UID=1000
 DATA_MOUNT=/opt/data
 DATA_LABEL=hermes-data
 ENV_SRC=/root/hermes.env
-ENV_DST=/etc/hermes/hermes.env
+ENV_DST=/etc/mercure/env
 
 log() { printf '\n==> %s\n' "$*"; }
 
@@ -74,8 +74,8 @@ chmod 0440 "/etc/sudoers.d/90-$HERMES_USER"
 chown "$HERMES_USER:$HERMES_USER" "$DATA_MOUNT"
 chmod 0750 "$DATA_MOUNT"
 
-log "secrets (/etc/hermes/hermes.env)"
-install -d -m 0755 /etc/hermes
+log "secrets (/etc/mercure/env)"
+install -d -m 0755 /etc/mercure
 if [ -f "$ENV_SRC" ]; then
   install -m 0600 -o root -g root "$ENV_SRC" "$ENV_DST"
   rm -f "$ENV_SRC"
@@ -91,8 +91,8 @@ HERMES_BIN="$(su -s /bin/bash "$HERMES_USER" -c 'command -v hermes' || true)"
 [ -n "$HERMES_BIN" ] || { echo "ERREUR : hermes introuvable après install.sh" >&2; exit 1; }
 echo "hermes -> $HERMES_BIN ($("$HERMES_BIN" --version 2>/dev/null | head -1))"
 
-log "service systemd hermes-gateway"
-cat >/etc/systemd/system/hermes-gateway.service <<EOF
+log "service systemd mercure-gateway"
+cat >/etc/systemd/system/mercure-gateway.service <<EOF
 [Unit]
 Description=Hermes Agent gateway
 After=network-online.target
@@ -118,13 +118,13 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable --now hermes-gateway.service
+systemctl enable --now mercure-gateway.service
 
 # linger : les cron jobs Hermes tournent en `systemd-run --user --scope`
 loginctl enable-linger "$HERMES_USER"
 
 log "état"
-systemctl is-active hermes-gateway.service || true
+systemctl is-active mercure-gateway.service || true
 su -s /bin/bash "$HERMES_USER" -c 'HERMES_HOME=/opt/data '"$HERMES_BIN"' doctor 2>&1 | tail -20' || true
 
-log "terminé — puis : incus exec <instance> -- journalctl -u hermes-gateway -f"
+log "terminé — puis : incus exec <instance> -- journalctl -u mercure-gateway -f"

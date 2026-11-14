@@ -1,7 +1,7 @@
-# Hermes Agent en VM Debian sur jupiter
+# mercure — VM Debian pour Hermes Agent sur jupiter
 
-Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par une VM
-Incus **Debian 13 (trixie)** pilotée depuis ce flake.
+Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par
+**mercure**, une VM Incus **Debian 13 (trixie)** pilotée depuis ce flake.
 
 - **Déclaratif (ce repo)** : daemon incus, pool de stockage, bridge, réservation DHCP,
   cloud-init, script de provisioning, unités systemd de création/provisioning,
@@ -16,7 +16,7 @@ L'image cloud Debian est **headless** : aucun serveur graphique, aucun X/Wayland
 aucun environnement de bureau n'est installé, ni par l'image ni par
 `provision.sh`. Il n'y a donc pas d'écran dans la VM, seulement :
 
-- `incus exec hermes -- …` (agent invité) ;
+- `incus exec mercure -- …` (agent invité) ;
 - la console série via l'UI web d'Incus ;
 - les ports HTTP servis par Hermes (dashboard `9119`, API `8642`), qui sont des
   pages web, pas une session graphique.
@@ -33,12 +33,12 @@ aucun snapd dans l'image.
 
 | Ressource | Valeur par défaut |
 |---|---|
-| Instance | `hermes` (VM, pas conteneur) |
+| Instance | `mercure` (VM, pas conteneur) |
 | Image | `images:debian/13` (incus-agent déjà présent → `incus exec` fonctionne) |
 | CPU / RAM | 4 vCPU / 6 GiB |
-| Pool | `hermes`, driver `dir`, source `/data/apps/incus` |
+| Pool | `mercure`, driver `dir`, source `/data/apps/incus` |
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP réservée `10.42.0.10` |
-| Disque données | volume bloc `hermes-data` (120 GiB) → `/opt/data` dans la VM |
+| Disque données | volume bloc `mercure-data` (120 GiB) → `/opt/data` dans la VM |
 
 `/opt/data` **garde le même chemin** que dans le conteneur : `config.yaml`, la base
 Mnemosyne, `state.db`, les skills et les chemins absolus continuent de fonctionner
@@ -60,7 +60,7 @@ décryptée sur l'hôte puis poussée dans la VM (jamais dans la config incus).
 
 ```sh
 sops secrets/common.yaml        # ajouter une clé :
-# hermes-vm-env: |
+# mercure-env: |
 #   OPENCODE_GO_API_KEY=...
 #   HERMES_DASHBOARD_BASIC_AUTH_USERNAME=...
 #   ...
@@ -69,7 +69,7 @@ sops secrets/common.yaml        # ajouter une clé :
 Puis dans `hosts/jupiter/default.nix` :
 
 ```nix
-envFile = config.sops.secrets."hermes-vm-env".path;
+envFile = config.sops.secrets."mercure-env".path;
 ```
 
 (Laisser `envFile = null` tant que la clé n'existe pas : sinon l'activation
@@ -79,9 +79,9 @@ envFile = config.sops.secrets."hermes-vm-env".path;
 
 ```sh
 git pull && nh os switch .
-systemctl status hermes-vm hermes-vm-provision     # ~5-10 min au premier boot
-incus list                                          # hermes RUNNING, IP 10.42.0.10
-incus exec hermes -- journalctl -u hermes-gateway -f
+systemctl status mercure mercure-provision     # ~5-10 min au premier boot
+incus list                                          # mercure RUNNING, IP 10.42.0.10
+incus exec mercure -- journalctl -u mercure-gateway -f
 ```
 
 ### 3. Migrer l'état du conteneur (manuel, volontairement hors du repo)
@@ -92,12 +92,12 @@ hermes-agent` suffit à revenir en arrière.
 
 ```sh
 SRC=/data/apps/hermes-agent
-INSTANCE=hermes
+INSTANCE=mercure
 
 # a. le conteneur doit être arrêté pour un état cohérent (state.db / SQLite)
 docker stop hermes-agent
 
-# b. copie avec uid/gid numériques préservés (1000 = hermes des deux côtés) ;
+# b. copie avec uid/gid numériques préservés (1000 = mercure des deux côtés) ;
 #    on exclut ce qui embarque des chemins d'interpréteur du conteneur
 tar -C "$SRC" --numeric-owner -cf - \
     --exclude=./venvs --exclude=./installs --exclude=./.venv \
@@ -107,11 +107,11 @@ tar -C "$SRC" --numeric-owner -cf - \
 # c. permissions + redémarrage
 incus exec "$INSTANCE" -- chown -R 1000:1000 /opt/data
 incus exec "$INSTANCE" -- chmod 0750 /opt/data
-incus exec "$INSTANCE" -- systemctl restart hermes-gateway
+incus exec "$INSTANCE" -- systemctl restart mercure-gateway
 
 # d. vérifications
-incus exec "$INSTANCE" -- su - hermes -c 'HERMES_HOME=/opt/data hermes doctor'
-incus exec "$INSTANCE" -- su - hermes -c 'HERMES_HOME=/opt/data hermes memory status'
+incus exec "$INSTANCE" -- su - mercure -c 'HERMES_HOME=/opt/data hermes doctor'
+incus exec "$INSTANCE" -- su - mercure -c 'HERMES_HOME=/opt/data hermes memory status'
 ```
 
 Rollback tant que le conteneur existe : `docker start hermes-agent`. Ne le
@@ -124,7 +124,7 @@ parce que Hermes bascule `sys.path` sur son environnement managé au démarrage.
 Après la migration, dans la VM :
 
 ```sh
-incus exec hermes -- su - hermes
+incus exec mercure -- su - mercure
 export PATH="$HOME/.local/bin:$PATH"
 
 # l'interpréteur réellement utilisé par le gateway
@@ -138,8 +138,8 @@ HERMES_HOME=/opt/data MNEMOSYNE_DATA_DIR=/opt/data \
 hermes config set memory.provider mnemosyne
 exit
 
-incus exec hermes -- systemctl restart hermes-gateway
-incus exec hermes -- su - hermes -c 'HERMES_HOME=/opt/data hermes memory status'
+incus exec mercure -- systemctl restart mercure-gateway
+incus exec mercure -- su - mercure -c 'HERMES_HOME=/opt/data hermes memory status'
 # attendu : Plugin: installed ✓ / Status: available ✓
 ```
 
@@ -189,9 +189,9 @@ certificat, `virtualisation.incus.useACMEHost` existe (Let's Encrypt via
 
 | Incident | Action |
 |---|---|
-| La VM ne démarre plus | `incus snapshot restore hermes <snap>` (snapshot avant chaque changement) |
+| La VM ne démarre plus | `incus snapshot restore mercure <snap>` (snapshot avant chaque changement) |
 | Hermes cassé après migration | `docker start hermes-agent` (état intact) |
-| Provisioning à rejouer | `systemctl restart hermes-vm-provision` |
+| Provisioning à rejouer | `systemctl restart mercure-provision` |
 | Module à retirer | `enable = false` + `nh os switch .` (l'instance et son volume survivent) |
 
 ## Points non vérifiés

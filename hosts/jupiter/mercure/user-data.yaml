@@ -1,7 +1,7 @@
 #cloud-config
 # Invité Debian (trixie) pour Hermes Agent — image cloud, sans aucune GUI.
 # Volontairement minimal : le reste est fait par /root/provision.sh, poussé et
-# exécuté depuis l'hôte (systemd.services.hermes-vm-provision).
+# exécuté depuis l'hôte (systemd.services.mercure-provision).
 
 timezone: Europe/Paris
 package_update: true

@@ -6,13 +6,13 @@
   zrx = {
     docker.enable = true;
     tailscale.enable = true;
-    # VM Ubuntu pour Hermes Agent (remplace le conteneur Docker jupiter/hermes-agent).
-    # Voir hosts/jupiter/hermes-vm/README.md pour l'ordre des opérations.
-    hermesVm = {
+    # mercure : VM Debian pour Hermes Agent (remplace le conteneur Docker jupiter/hermes-agent).
+    # Voir hosts/jupiter/mercure/README.md pour l'ordre des opérations.
+    mercure = {
       enable = true;
-      userData = ./hermes-vm/user-data.yaml;
-      provisionScript = ./hermes-vm/provision.sh;
-      # envFile = config.sops.secrets."hermes-vm-env".path;
+      userData = ./mercure/user-data.yaml;
+      provisionScript = ./mercure/provision.sh;
+      # envFile = config.sops.secrets."mercure-env".path;
       #   -> nécessite { config, ... }: en tête de fichier + la clé dans secrets/common.yaml
     };
     shareServer = {

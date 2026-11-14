@@ -5,7 +5,7 @@
   config,
   ...
 }: let
-  cfg = config.zrx.hermesVm;
+  cfg = config.zrx.mercure;
   incus = "${config.virtualisation.incus.clientPackage}/bin/incus";
   dataVolume = "${cfg.name}-data";
 
@@ -15,15 +15,15 @@
   in "${lib.concatStringsSep "." first3}.1/24";
   pushEnv =
     if cfg.envFile == null
-    then "echo 'envFile non configuré : /etc/hermes/hermes.env ne sera pas poussé'"
+    then "echo 'envFile non configuré : /etc/mercure/env ne sera pas poussé'"
     else "${incus} file push ${cfg.envFile} \"$name/root/hermes.env\" --mode 0600";
 in {
-  options.zrx.hermesVm = {
+  options.zrx.mercure = {
     enable = lib.mkEnableOption "Hermes Agent running in an Incus VM with a Debian guest";
 
     name = lib.mkOption {
       type = lib.types.str;
-      default = "hermes";
+      default = "mercure";
       description = "Incus instance name.";
     };
 
@@ -47,7 +47,7 @@ in {
 
     storagePool = lib.mkOption {
       type = lib.types.str;
-      default = "hermes";
+      default = "mercure";
       description = "Incus storage pool name (created by preseed).";
     };
 
@@ -120,7 +120,7 @@ in {
       default = null;
       description = ''
         Host path of the decrypted dotenv file pushed to the guest as
-        /etc/hermes/hermes.env. Typically `config.sops.secrets."hermes-vm-env".path`.
+        /etc/mercure/env. Typically `config.sops.secrets."mercure-env".path`.
         Leave null until the sops key exists, otherwise activation fails.
       '';
     };
@@ -191,7 +191,7 @@ in {
     };
 
     # 1. Création de l'instance (une seule fois) puis démarrage.
-    systemd.services.hermes-vm = {
+    systemd.services.mercure = {
       description = "Ensure the Hermes VM exists and is running";
       wantedBy = ["multi-user.target"];
       wants = ["incus-preseed.service"];
@@ -232,11 +232,11 @@ in {
     };
 
     # 2. Provisioning : attend cloud-init, pousse les scripts, exécute.
-    systemd.services.hermes-vm-provision = {
+    systemd.services.mercure-provision = {
       description = "Provision the Hermes VM (packages, /opt/data, Hermes install)";
       wantedBy = ["multi-user.target"];
-      wants = ["hermes-vm.service"];
-      after = ["hermes-vm.service" "network-online.target"];
+      wants = ["mercure.service"];
+      after = ["mercure.service" "network-online.target"];
       path = [pkgs.coreutils pkgs.gnugrep];
       serviceConfig = {
         Type = "oneshot";
