@@ -119,6 +119,23 @@ systemctl status incus-vm-mercure    # création/réconciliation de l'instance a
 incus list                          # mercure RUNNING, IP 10.42.0.10
 ```
 
+**Vérifier le protocole du partage avant de migrer les données** — c'est incusd qui
+choisit, au démarrage, entre virtiofs (« si disponible ») et 9p :
+
+```sh
+# vérité terrain, depuis la VM : virtiofs = ok, 9p = SQLite risqué sur /opt/data
+incus exec mercure -- findmnt -no FSTYPE /opt/data
+
+# côté hôte, même information dans la ligne de commande de QEMU
+ps -eo args= | grep -oE -- '-device vhost-user-fs-pci|-virtfs local' | head -1
+#   vhost-user-fs-pci => virtiofs
+#   virtfs local     => 9p
+```
+
+virtiofs est attendu ici : le module nixpkgs met `virtiofsd` dans le PATH d'incusd,
+et la mémoire d'une VM incus est partagée avec l'hôte par défaut (prérequis de
+virtiofs). Il n'existe pas d'option de device pour forcer l'un ou l'autre.
+
 ### 2. Installer Hermes à la main (une fois, le strict nécessaire)
 
 ```sh
