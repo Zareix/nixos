@@ -4,7 +4,7 @@ Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par
 **mercure**, une VM Incus **Debian 13 (trixie)** pilotée depuis ce flake.
 
 - **Déclaratif (ce repo)** : le module générique `modules/zrx/incus.nix`
-  (`zrx.incus`) — daemon incus, pools, bridges, profils, réservation DHCP, UI web,
+  (`zrx.incus`) — daemon incus, pools, bridges, profils, UI web,
   cloud-init, partages de répertoires hôte, création et réconciliation des instances.
 - **Manuel (assumé)** : tout l'intérieur de la VM — paquets, Hermes, unité
   systemd. Aucun script de provisioning n'est fourni : les étapes
@@ -36,20 +36,19 @@ juste avant le cron, sans rien changer d'autre.
 
 ## Module générique
 
-`modules/zrx/incus.nix` ne connaît pas Hermes : il expose `zrx.incus` (pools,
-réseaux, UI) et `zrx.incus.vms.<nom>` (image, cpu/mem, disque racine, partages,
-volumes bloc, IP réservée, cloud-init). Tout ce qui est spécifique à mercure tient
+`modules/zrx/incus.nix` ne connaît pas Hermes : il expose `zrx.incus` (pool,
+réseau, UI) et `zrx.incus.vms.<nom>` (image, cpu/mem, disque racine, partages,
+cloud-init). Tout ce qui est spécifique à mercure tient
 dans l'appel du host `hosts/jupiter/default.nix`, plus le `user-data.yaml` d'ici.
 
 ```nix
 zrx.incus = {
   enable = true;
-  storagePools.default.source = "/data/apps/incus";
-  networks.incusbr0.cidr = "10.42.0.0/24";
+  storageSource = "/data/apps/incus";
+  network = "10.42.0.1/24";
   vms.mercure = {
     image = "images:debian/13";
     cpu = 4; memory = "6GiB"; rootSize = "60GiB";
-    pool = "default"; network = "incusbr0"; ip = "10.42.0.10";
     userData = ./mercure/user-data.yaml;
     shares = [{name = "data"; source = "/data/apps/mercure"; path = "/opt/data";}];
   };
@@ -59,10 +58,10 @@ zrx.incus = {
 Une deuxième VM = une entrée de plus sous `vms`, une unité `incus-vm-<nom>`
 générée automatiquement. Limites à connaître :
 
-- `cpu`, `memory`, `autostart`, présence des partages et des volumes sont
-  **réconciliés à chaque rebuild** ;
-- `rootSize` et la taille des `dataVolumes` ne s'appliquent **qu'à la création**
-  (redimensionner est une opération incus manuelle) ;
+- `cpu`, `memory` et la présence des partages sont **réconciliés à chaque
+  rebuild** ;
+- `rootSize` ne s'applique **qu'à la création** (redimensionner est une opération
+  incus manuelle) ;
 - le preseed n'est appliqué **qu'à l'initialisation d'incus** : ajouter un pool ou
   un réseau plus tard ne crée rien, il faut `incus storage create` /
   `incus network create` à la main ;
@@ -95,7 +94,7 @@ aucun snapd dans l'image.
 | Image | `images:debian/13` (incus-agent déjà présent → `incus exec` fonctionne) |
 | CPU / RAM | 4 vCPU / 6 GiB |
 | Pool | `default`, driver `dir`, source `/data/apps/incus` (disque système seulement) |
-| Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP réservée `10.42.0.10` |
+| Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP en DHCP (l'accès passe par le tailnet) |
 | Données | partage hôte `/data/apps/mercure` (uid/gid 1000) → `/opt/data` |
 
 `/opt/data` **garde le même chemin** que dans le conteneur : `config.yaml`, `state.db`, les skills et les chemins absolus continuent de fonctionner
@@ -115,7 +114,7 @@ df -h /data/apps                    # ~80 G libres (disque système de la VM)
 ```sh
 git pull && nh os switch .
 systemctl status incus-vm-mercure    # création/réconciliation de l'instance au boot
-incus list                          # mercure RUNNING, IP 10.42.0.10
+incus list                          # mercure RUNNING, IP 10.42.0.x (DHCP)
 ```
 
 **Vérifier le protocole du partage avant de migrer les données** — c'est incusd qui
@@ -239,15 +238,16 @@ données réelles, quelques Go) est sauvegardé en incrémental, et le pool incu
 ### 5. Accès réseau
 
 - Dashboard en tailnet-only sous `zrx.sh` (convention maison) : installer tailscale
-  dans la VM, `tailscale up`, puis router Traefik vers `10.42.0.10:9119`.
-- Traefik ne peut plus lire les labels Docker : la route devient statique
-  (fichier de provider) — c'est la seule régression fonctionnelle du passage en VM.
+  dans la VM, `tailscale up`, puis joindre le dashboard par son IP tailnet
+  (`http://<hostname-tailnet>:9119`). L'IP du bridge est dynamique : pas de route
+  Traefik statique pour la VM.
 
 ### 6. UI web d'Incus
 
 Le module active `virtualisation.incus.ui` (`incus-ui-canonical`) et publie
-`core.https_address` sur le port 8443, **ouvert uniquement sur `tailscale0`**
-(`ui.tailnetOnly = true`, désactivable).
+`core.https_address` sur le port 8443. Le firewall NixOS est désactivé
+(`modules/core/network.nix`) : le port écoute sur toutes les interfaces, l'accès
+se fait par le tailnet.
 
 ```sh
 # une fois, pour autoriser un navigateur
@@ -288,8 +288,6 @@ certificat, `virtualisation.incus.useACMEHost` existe (Let's Encrypt via
 ## Points non vérifiés
 
 - `/dev/kvm` sur jupiter (à contrôler avant tout).
-- `incus config device set|override eth0 ipv4.address` : la commande qui marche
-  dépend de la version d'incus ; le module essaie les deux et avertit.
 - Protocole du partage (9p ou virtiofs) : c'est incus qui décide. À vérifier au
   premier boot (`incus info mercure`, puis `mount | grep /opt/data` dans la VM) —
   en 9p, SQLite sur `/opt/data` est franchement risqué.
