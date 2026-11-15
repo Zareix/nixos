@@ -184,10 +184,11 @@ dans `~/.local/bin`.
 `systemd-run --user --scope`, qui exige un gestionnaire de session pour l'uid.
 
 Le `.env` vit dans `HERMES_HOME`, donc `/opt/data/.env` — il arrive avec la
-migration (§3). Pour une VM neuve, l'écrire directement sur l'hôte :
+migration (§3). Pour une VM neuve, copier celui du conteneur sur l'hôte
+(`raphaelgc` est uid 1000 des deux côtés, donc un simple `install` suffit) :
 
 ```sh
-install -m 0600 -o 1000 -g 1000 /chemin/vers/.env /data/apps/mercure/.env
+install -D -m 0600 /data/apps/hermes-agent/.env /data/apps/mercure/.env
 ```
 
 Le dashboard web n'est **pas** couvert par le service du gateway : il a sa propre
