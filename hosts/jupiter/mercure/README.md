@@ -190,6 +190,37 @@ migration (§3). Pour une VM neuve, l'écrire directement sur l'hôte :
 install -m 0600 -o 1000 -g 1000 /chemin/vers/.env /data/apps/mercure/.env
 ```
 
+Le dashboard web n'est **pas** couvert par le service du gateway : il a sa propre
+unité, à installer une fois `/opt/data/.env` en place (migration §3, ou écriture
+directe ci-dessus). Écouter sur `0.0.0.0` active l'auth gate, dont les
+identifiants sont `HERMES_DASHBOARD_BASIC_AUTH_*`.
+
+```sh
+incus exec mercure -- bash -c 'cat >/etc/systemd/system/hermes-dashboard.service <<"EOF"
+[Unit]
+Description=Hermes Agent Web Dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=raphaelgc
+Environment=HERMES_HOME=/opt/data
+ExecStart=/home/raphaelgc/.local/bin/hermes dashboard --host 0.0.0.0 --port 9119 --no-open
+Restart=always
+RestartSec=10
+RestartPreventExitStatus=78
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload && systemctl enable --now hermes-dashboard'
+```
+
+`RestartPreventExitStatus=78` évite la boucle de redémarrage quand Hermes refuse
+volontairement de démarrer (port déjà servi). Le process lit lui-même
+`$HERMES_HOME/.env`, donc pas d'`EnvironmentFile`. Si les extras web manquent,
+`hermes dashboard` affiche la commande à lancer.
+
 ### 3. Migrer l'état du conteneur (manuel, volontairement hors du repo)
 
 Aucun script n'est fourni : à lancer à la main, une fois, depuis jupiter. Comme
@@ -212,10 +243,17 @@ rsync -aH --numeric-ids \
 
 chown -R 1000:1000 "$DST"
 
-# c. redémarrage dans la VM
+# c. config.yaml : deux restes du conteneur à corriger (fichier de l'hôte)
+$EDITOR "$DST/config.yaml"
+#    - retirer DONGHOST_NO_SANDBOX de mcp_servers.donsetch.env
+#      (la VM a un vrai sandbox chromium)
+#    - BLADE_HOME: /home/hermeswebui/.hermes/blade-state
+#         -> /home/raphaelgc/.hermes/blade-state
+
+# d. redémarrage dans la VM
 incus exec mercure -- systemctl restart mercure-gateway
 
-# d. vérifications
+# e. vérifications
 incus exec mercure -- su - raphaelgc -c 'HERMES_HOME=/opt/data hermes doctor'
 ```
 
