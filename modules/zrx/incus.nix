@@ -164,13 +164,9 @@ in {
 
     virtualisation.incus = {
       enable = true;
-      ui.enable = true;
       # Le preseed ne s'applique qu'à l'initialisation d'incus : modifier le pool
       # ou le bridge après coup se fait à la main (`incus storage|network edit`).
       preseed = {
-        # incusd n'écoute que sur le socket unix par défaut : l'UI (comme l'API
-        # distante) exige core.https_address.
-        config."core.https_address" = "0.0.0.0:8443";
         storage_pools = [
           {
             name = "default";
