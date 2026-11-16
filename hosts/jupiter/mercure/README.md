@@ -192,9 +192,11 @@ incus exec mercure -- loginctl enable-linger raphaelgc
 `--system` installe une unité system-level (démarrage au boot, sans session
 ouverte), `--run-as-user` fixe l'utilisateur d'exécution et `HERMES_HOME` pointe
 sur l'état partagé. L'unité s'appelle `hermes-gateway-<hash>` (hash du
-`HERMES_HOME` non standard) : `hermes gateway status|restart|stop` la retrouve,
-inutile de retenir le nom. Adapter le chemin du binaire si `install.sh` ne l'a
-pas mis dans `~/.local/bin`.
+`HERMES_HOME` non standard) ; pilote-la par glob : `systemctl status|stop|start
+'hermes-gateway*'`. Éviter `hermes gateway stop|restart` en root : la commande
+vérifie que `/opt/data` appartient à l'utilisateur appelant et refuse
+(`unsafe_control_path`, attendu uid 0). Adapter le chemin du binaire si
+`install.sh` ne l'a pas mis dans `~/.local/bin`.
 
 Si l'install échoue sur `refusing to update …hermes-agent` ou `no dependency
 environment is committed`, une mise à jour a été interrompue : la finir en
@@ -257,8 +259,7 @@ DST=/data/apps/mercure
 docker stop hermes-agent 2>/dev/null || true   # déjà supprimé : ignorer
 
 # a bis. et le gateway de la VM, qui tient state.db ouvert
-incus exec mercure -- sudo env HERMES_HOME=/opt/data \
-  /home/raphaelgc/.local/bin/hermes gateway stop
+incus exec mercure -- systemctl stop 'hermes-gateway*'
 
 # b. copie directe, uid/gid préservés ; on exclut ce qui embarque des chemins
 #    d'interpréteur du conteneur
@@ -277,8 +278,7 @@ $EDITOR "$DST/config.yaml"
 #         -> /home/raphaelgc/.hermes/blade-state
 
 # d. redémarrage dans la VM
-incus exec mercure -- sudo env HERMES_HOME=/opt/data \
-  /home/raphaelgc/.local/bin/hermes gateway restart
+incus exec mercure -- systemctl start 'hermes-gateway*'
 
 # e. vérifications
 incus exec mercure -- su - raphaelgc -c 'HERMES_HOME=/opt/data hermes doctor'
