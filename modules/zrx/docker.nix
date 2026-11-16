@@ -52,9 +52,7 @@ in {
         ino=$(${pkgs.coreutils}/bin/stat -c %i /run/docker.sock 2>/dev/null || true)
         [ -n "$ino" ] || exit 0
 
-        # premier passage (boot) : on mémorise, on ne touche à rien
         if [ ! -f "$stamp" ]; then echo "$ino" > "$stamp"; exit 0; fi
-        # socket inchangé : rien à faire
         if [ "$(${pkgs.coreutils}/bin/cat "$stamp")" = "$ino" ]; then exit 0; fi
         echo "$ino" > "$stamp"
 

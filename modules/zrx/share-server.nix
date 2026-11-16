@@ -16,7 +16,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # NFS
     services.nfs.server = {
       enable = true;
       statdPort = 4000;
@@ -27,7 +26,6 @@ in {
       '';
     };
 
-    # SAMBA
     # Run `sudo smbpasswd -a my_user` to add user
     services.samba = {
       enable = true;
