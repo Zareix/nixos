@@ -47,7 +47,7 @@ zrx.incus = {
   storageSource = "/data/apps/incus";
   network = "10.42.0.1/24";
   vms.mercure = {
-    image = "images:debian/13";
+    image = "images:debian/13/cloud";
     cpu = 4; memory = "6GiB"; rootSize = "60GiB";
     userData = ./mercure/user-data.yaml;
     shares = [{name = "data"; source = "/data/apps/mercure"; path = "/opt/data";}];
@@ -91,7 +91,7 @@ aucun snapd dans l'image.
 | Ressource | Valeur |
 |---|---|
 | Instance | `mercure` (VM, pas conteneur) |
-| Image | `images:debian/13` (incus-agent déjà présent → `incus exec` fonctionne) |
+| Image | `images:debian/13/cloud` (incus-agent + cloud-init → `incus exec` et user-data au premier boot) |
 | CPU / RAM | 4 vCPU / 6 GiB |
 | Pool | `default`, driver `dir`, source `/data/apps/incus` (disque système seulement) |
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP en DHCP (l'accès passe par le tailnet) |
@@ -115,6 +115,14 @@ df -h /data/apps                    # ~80 G libres (disque système de la VM)
 git pull && nh os switch .
 systemctl status incus-vm-mercure    # création/réconciliation de l'instance au boot
 incus list                          # mercure RUNNING, IP 10.42.0.x (DHCP)
+```
+
+Au premier boot, l'agent incus dépose les templates cloud-init puis redémarre la
+VM : attendre la fin avant de continuer.
+
+```sh
+incus exec mercure -- cloud-init status --wait   # status: done
+incus exec mercure -- id raphaelgc               # uid=1000, créé par cloud-init
 ```
 
 **Vérifier le protocole du partage avant de migrer les données** — c'est incusd qui

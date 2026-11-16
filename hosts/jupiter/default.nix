@@ -16,7 +16,7 @@
       storageSource = "/data/apps/incus";
       network = "10.42.0.1/24";
       vms.mercure = {
-        image = "images:debian/13";
+        image = "images:debian/13/cloud";
         cpu = 4;
         memory = "6GiB";
         rootSize = "60GiB";

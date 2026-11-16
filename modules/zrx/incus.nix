@@ -93,7 +93,7 @@ in {
           image = lib.mkOption {
             type = lib.types.str;
             description = ''
-              Incus image, e.g. "images:debian/13". Must come from a remote whose
+              Incus image, e.g. "images:debian/13/cloud". Must come from a remote whose
               images ship the incus-agent, so `incus exec` works from first boot.
             '';
           };
