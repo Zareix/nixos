@@ -172,10 +172,16 @@ incus exec mercure -- su - raphaelgc -c \
   'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash'
 ```
 
+`install.sh` enchaîne sur le wizard `hermes setup` : répondre **ESC** (annuler).
+Le vrai `config.yaml` arrive avec la migration (§3) — le wizard en créerait un
+autre, aussitôt écrasé.
+
 Le service est géré par l'installeur, pas à la main :
 
 ```sh
-incus exec mercure -- env HERMES_HOME=/opt/data \
+# `sudo` réinitialise l'environnement : passer HERMES_HOME via `sudo env`,
+# sinon root travaille dans /root/.hermes.
+incus exec mercure -- sudo env HERMES_HOME=/opt/data \
   /home/raphaelgc/.local/bin/hermes gateway install --system \
   --run-as-user raphaelgc --start-now
 
@@ -185,8 +191,15 @@ incus exec mercure -- loginctl enable-linger raphaelgc
 
 `--system` installe une unité system-level (démarrage au boot, sans session
 ouverte), `--run-as-user` fixe l'utilisateur d'exécution et `HERMES_HOME` pointe
-sur l'état partagé. Adapter le chemin du binaire si `install.sh` ne l'a pas mis
-dans `~/.local/bin`.
+sur l'état partagé. L'unité s'appelle `hermes-gateway-<hash>` (hash du
+`HERMES_HOME` non standard) : `hermes gateway status|restart|stop` la retrouve,
+inutile de retenir le nom. Adapter le chemin du binaire si `install.sh` ne l'a
+pas mis dans `~/.local/bin`.
+
+Si l'install échoue sur `refusing to update …hermes-agent` ou `no dependency
+environment is committed`, une mise à jour a été interrompue : la finir en
+`raphaelgc` avant de relancer (`hermes update`, puis `hermes pm repair` si
+demandé). Ne jamais la lancer en root : le checkout appartient à uid 1000.
 
 `loginctl enable-linger` reste nécessaire : les cron jobs Hermes tournent en
 `systemd-run --user --scope`, qui exige un gestionnaire de session pour l'uid.
@@ -241,7 +254,11 @@ SRC=/data/apps/hermes-agent
 DST=/data/apps/mercure
 
 # a. état cohérent : on arrête le conteneur (state.db / SQLite)
-docker stop hermes-agent
+docker stop hermes-agent 2>/dev/null || true   # déjà supprimé : ignorer
+
+# a bis. et le gateway de la VM, qui tient state.db ouvert
+incus exec mercure -- sudo env HERMES_HOME=/opt/data \
+  /home/raphaelgc/.local/bin/hermes gateway stop
 
 # b. copie directe, uid/gid préservés ; on exclut ce qui embarque des chemins
 #    d'interpréteur du conteneur
@@ -260,7 +277,8 @@ $EDITOR "$DST/config.yaml"
 #         -> /home/raphaelgc/.hermes/blade-state
 
 # d. redémarrage dans la VM
-incus exec mercure -- systemctl restart mercure-gateway
+incus exec mercure -- sudo env HERMES_HOME=/opt/data \
+  /home/raphaelgc/.local/bin/hermes gateway restart
 
 # e. vérifications
 incus exec mercure -- su - raphaelgc -c 'HERMES_HOME=/opt/data hermes doctor'
