@@ -24,10 +24,11 @@ choisit). Conséquences voulues :
 - un partage n'est **pas** snapshoté avec l'instance : la protection des données,
   c'est restic, pas le snapshot incus.
 
-**Risque accepté** : `state.db` (SQLite) vit sur ce
-partage. SQLite attend des verrous POSIX et des `fsync` de disque local ; en
-virtiofs ça tient avec un seul écrivain, en 9p non. Choix assumé en échange de la
-simplicité du backup — à revoir si le gateway journalise des `disk I/O error`.
+**Mode journal obligatoire** : `state.db` (SQLite) vit sur ce partage. En mode
+**WAL**, SQLite échoue sur virtiofs (`disk I/O error`) et le doctor signale un
+risque de corruption. Toutes les bases doivent être en `journal_mode: delete`
+(`database.journal_mode` dans `config.yaml`, conversion en §3), sinon le gateway
+crashe en boucle au démarrage.
 
 Corollaire : restic lit une base **vivante** (il ne prend pas les verrous SQLite),
 donc une restauration peut échouer au `integrity_check`. Si ça arrive, la parade
@@ -192,11 +193,21 @@ incus exec mercure -- loginctl enable-linger raphaelgc
 `--system` installe une unité system-level (démarrage au boot, sans session
 ouverte), `--run-as-user` fixe l'utilisateur d'exécution et `HERMES_HOME` pointe
 sur l'état partagé. L'unité s'appelle `hermes-gateway-<hash>` (hash du
-`HERMES_HOME` non standard) ; pilote-la par glob : `systemctl status|stop|start
-'hermes-gateway*'`. Éviter `hermes gateway stop|restart` en root : la commande
+`HERMES_HOME` non standard, ici `hermes-gateway-b7dd404e`) : `systemctl
+status|stop 'hermes-gateway*'` fonctionne sur une unité chargée, mais pour la
+(re)démarrer après un arrêt, utilise le nom complet — un glob ne relance pas une
+unité déchargée. Éviter `hermes gateway stop|restart` en root : la commande
 vérifie que `/opt/data` appartient à l'utilisateur appelant et refuse
-(`unsafe_control_path`, attendu uid 0). Adapter le chemin du binaire si
-`install.sh` ne l'a pas mis dans `~/.local/bin`.
+(`unsafe_control_path`). Adapter le chemin du binaire si `install.sh` ne l'a pas
+mis dans `~/.local/bin`.
+
+Depuis npm 11.19, le postinstall de `donsetch` est bloqué : `binaries/donsetch`
+(le chemin du `config.yaml`) n'existe qu'après un premier lancement du wrapper.
+Une fois pour toutes, en root :
+
+```sh
+incus exec mercure -- /usr/local/bin/donsetch --version
+```
 
 Si l'install échoue sur `refusing to update …hermes-agent` ou `no dependency
 environment is committed`, une mise à jour a été interrompue : la finir en
@@ -254,12 +265,11 @@ Le conteneur est **arrêté, jamais supprimé**.
 ```sh
 SRC=/data/apps/hermes-agent
 DST=/data/apps/mercure
+UNIT=hermes-gateway-b7dd404e   # systemctl list-unit-files 'hermes-gateway*'
 
-# a. état cohérent : on arrête le conteneur (state.db / SQLite)
+# a. état cohérent : conteneur et services de la VM arrêtés (state.db)
 docker stop hermes-agent 2>/dev/null || true   # déjà supprimé : ignorer
-
-# a bis. et le gateway de la VM, qui tient state.db ouvert
-incus exec mercure -- systemctl stop 'hermes-gateway*'
+incus exec mercure -- systemctl stop hermes-dashboard $UNIT
 
 # b. copie directe, uid/gid préservés ; on exclut ce qui embarque des chemins
 #    d'interpréteur du conteneur
@@ -267,21 +277,34 @@ rsync -aH --numeric-ids \
   --exclude 'venvs/' --exclude 'installs/' --exclude '.venv/' \
   --exclude '.npm-global/' --exclude 'home/.npm/' --exclude 'webui/cache/' \
   "$SRC"/ "$DST"/
-
 chown -R 1000:1000 "$DST"
 
-# c. config.yaml : deux restes du conteneur à corriger (fichier de l'hôte)
+# c. config.yaml : restes du conteneur + mode journal SQLite
 $EDITOR "$DST/config.yaml"
 #    - retirer DONGHOST_NO_SANDBOX de mcp_servers.donsetch.env
 #      (la VM a un vrai sandbox chromium)
 #    - BLADE_HOME: /home/hermeswebui/.hermes/blade-state
 #         -> /home/raphaelgc/.hermes/blade-state
+#    - ajouter à la racine :
+#        database:
+#          journal_mode: delete
 
-# d. redémarrage dans la VM
-incus exec mercure -- systemctl start 'hermes-gateway*'
+# d. bases SQLite : le WAL ne fonctionne pas sur virtiofs (disk I/O error), et
+#    `hermes sessions set-journal-mode` échoue car il ouvre la base sur le
+#    partage. On convertit donc hors du partage, via /tmp.
+incus exec mercure -- bash -c '
+  for db in $(find /opt/data -name "*.db" -not -path "*/cache/*" -not -path "*/backups/*"); do
+    cp "$db" /tmp/c.db; cp "$db-wal" /tmp/c.db-wal 2>/dev/null
+    python3 -c "import sqlite3; sqlite3.connect(\"/tmp/c.db\").execute(\"pragma journal_mode=delete\")"
+    cp /tmp/c.db "$db"; rm -f /tmp/c.db* "$db-wal" "$db-shm"
+  done'
 
-# e. vérifications
+# e. redémarrage (nom complet : le glob ne relance pas une unité déchargée)
+incus exec mercure -- systemctl start $UNIT hermes-dashboard
+
+# f. vérifications
 incus exec mercure -- su - raphaelgc -c 'HERMES_HOME=/opt/data hermes doctor'
+incus exec mercure -- journalctl -u $UNIT -n 20 --no-pager
 ```
 
 Rollback tant que le conteneur existe : `docker start hermes-agent`. Ne le
