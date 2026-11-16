@@ -164,8 +164,8 @@ exit
 ```
 
 Puis l'installation officielle, en tant que `raphaelgc` — l'utilisateur de
-`vars.nix`, renommé depuis `debian` par cloud-init (uid 1000 conservé, donc
-propriétaire de `/opt/data`). C'est le chemin **Tier 1** :
+`vars.nix`, créé par cloud-init comme utilisateur par défaut de l'image (uid 1000,
+donc propriétaire de `/opt/data`). C'est le chemin **Tier 1** :
 
 ```sh
 incus exec mercure -- su - raphaelgc -c \
