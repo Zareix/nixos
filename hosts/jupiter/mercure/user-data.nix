@@ -19,12 +19,8 @@
   package_upgrade: false
 
   packages:
-    - qemu-guest-agent
     - ca-certificates
     - curl
     - git
     - jq
-
-  runcmd:
-    - systemctl enable --now qemu-guest-agent
 ''
