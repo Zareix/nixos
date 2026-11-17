@@ -30,7 +30,7 @@
   fileSystems."/mnt/mass" = {
     device = "/dev/disk/by-uuid/e59ec576-6efd-4f7f-bd91-b39b6b16ee46";
     fsType = "ext4";
-    options = ["nofail" "defaults"];
+    options = ["nofail" "defaults" "x-systemd.device-timeout=60" "x-systemd.automount"];
   };
 
   swapDevices = [];
