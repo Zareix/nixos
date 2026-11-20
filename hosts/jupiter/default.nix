@@ -1,4 +1,8 @@
-{...}: {
+{
+  pkgs,
+  globals,
+  ...
+}: {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -6,6 +10,19 @@
   zrx = {
     docker.enable = true;
     tailscale.enable = true;
+    # mercure : VM pour Hermes Agent
+    incus = {
+      enable = true;
+      storageSource = "/data/apps/incus";
+      network = "10.42.0.1/24";
+      vms.mercure = {
+        image = "images:debian/13/cloud";
+        cpu = 4;
+        memory = "6GiB";
+        rootSize = "60GiB";
+        userData = pkgs.writeText "mercure-user-data.yaml" (import ./mercure/user-data.nix {inherit globals;});
+      };
+    };
     shareServer = {
       enable = true;
       shareFolder = "/mnt/mass/share";

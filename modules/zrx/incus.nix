@@ -7,7 +7,6 @@
 }: let
   cfg = config.zrx.incus;
   incus = "${config.virtualisation.incus.clientPackage}/bin/incus";
-  grep = "${pkgs.gnugrep}/bin/grep";
 
   # Un profil par VM : disque racine + NIC. `incus admin init --preseed` ne crée
   # pas de profil "default", et une instance sans NIC boote sans réseau.
@@ -30,23 +29,12 @@
     })
     cfg.vms;
 
-  # Partages de répertoires de l'hôte montés dans l'invité (9p ou virtiofs).
-  # Les fichiers restent lisibles sur l'hôte : un restic hôte les sauvegarde
-  # normalement, sans lire d'image disque.
-  shareSetup = name: vm:
-    lib.concatMapStringsSep "\n" (share: ''
-      ${incus} config device list "$name" | ${grep} -qx "${share.name}" \
-        || ${incus} config device add "$name" ${share.name} disk source=${share.source} path=${share.path} \
-        || echo "ATTENTION : partage ${share.name} non monté dans $name"
-    '')
-    vm.shares;
-
   mkService = name: vm: {
     description = "Ensure the Incus VM ${name} exists, is configured and running";
     wantedBy = ["multi-user.target"];
     wants = ["incus-preseed.service"];
     after = ["incus.service" "incus-preseed.service" "network-online.target"];
-    path = [pkgs.coreutils pkgs.gnugrep];
+    path = [pkgs.coreutils];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -67,8 +55,6 @@
       ${incus} config set "$name" limits.cpu=${toString vm.cpu}
       ${incus} config set "$name" limits.memory=${vm.memory}
       ${incus} config set "$name" boot.autostart=true
-
-      ${shareSetup name vm}
 
       ${incus} start "$name" || true
     '';
@@ -119,30 +105,6 @@ in {
               instance config (`incus config show`, `incus export`).
             '';
           };
-          shares = lib.mkOption {
-            type = lib.types.listOf (lib.types.submodule {
-              options = {
-                name = lib.mkOption {
-                  type = lib.types.str;
-                  description = "Device name (must be unique inside the instance).";
-                };
-                source = lib.mkOption {
-                  type = lib.types.str;
-                  description = "Directory on the host to expose. Created if missing.";
-                };
-                path = lib.mkOption {
-                  type = lib.types.str;
-                  description = "Mount point inside the guest.";
-                };
-              };
-            });
-            default = [];
-            description = ''
-              Host directories shared into the guest (9p or virtiofs, incus
-              decides). The data stays plain files on the host, so a host-side
-              backup tool can read it directly.
-            '';
-          };
         };
       });
       default = {};
@@ -152,15 +114,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Les pools "dir" exigent que leur répertoire existe avant le preseed.
-    systemd.tmpfiles.rules =
-      ["d ${cfg.storageSource} 0711 root root -"]
-      ++ lib.concatLists (lib.mapAttrsToList (
-          _: vm:
-          # 1000:1000 = l'utilisateur cloud-init de l'invité (renommé par vars.nix).
-            map (share: "d ${share.source} 0750 1000 1000 -")
-            vm.shares
-        )
-        cfg.vms);
+    systemd.tmpfiles.rules = ["d ${cfg.storageSource} 0711 root root -"];
 
     virtualisation.incus = {
       enable = true;
