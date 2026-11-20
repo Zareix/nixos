@@ -10,8 +10,9 @@ Remplace le conteneur Docker `jupiter/hermes-agent` (repo `Zareix/docker`) par
 
 ## Données : locales à la VM
 
-`/opt/data` est un simple répertoire du **disque système de la VM** (pool
-`/data/apps/incus`), pas un partage de l'hôte :
+`~/.hermes` (le défaut de Hermes, aucun `HERMES_HOME`) est un simple répertoire
+du **disque système de la VM** (pool `/data/apps/incus`), pas un partage de
+l'hôte :
 
 - SQLite (`state.db`) vit sur un ext4 local : WAL et verrous POSIX normaux,
   aucun des problèmes d'un partage virtiofs/9p ;
@@ -78,7 +79,7 @@ aucun snapd dans l'image.
 | CPU / RAM | 4 vCPU / 6 GiB |
 | Pool | `default`, driver `dir`, source `/data/apps/incus` |
 | Réseau | bridge `incusbr0`, `10.42.0.0/24`, IP en DHCP (l'accès passe par le tailnet) |
-| Données | `/opt/data` local au disque de la VM (copie minimale en §3) |
+| Données | `~/.hermes` (défaut Hermes) sur le disque de la VM (copie minimale en §3) |
 
 ## Ordre des opérations
 
@@ -135,34 +136,43 @@ Le vrai `config.yaml` arrive avec la copie (§3) — le wizard en créerait un a
 
 ### 3. Copier le minimum depuis le conteneur
 
-Le strict nécessaire : réglages, secrets, mémoire, skills, cron. Pas de
+Le strict nécessaire : réglages, secrets, mémoire, skills, scripts, cron. Pas de
 `state.db` (l'historique), ni `home/`, ni caches, ni `installs/`.
 
 ```sh
 SRC=/data/apps/hermes-agent
+DST=/home/raphaelgc/.hermes
 
 docker stop hermes-agent 2>/dev/null || true   # copie cohérente (auth.json)
-
-incus exec mercure -- install -d -o 1000 -g 1000 /opt/data
 
 tar -C "$SRC" -cf - --exclude 'skills/.archive' \
   config.yaml .env auth.json SOUL.md MEMORY.md USER.md \
   profile.yaml secrets.yaml google_token.json google_client_secret.json \
-  skills cron plugins/hermes-push \
-  | incus exec mercure -- tar -C /opt/data -xf -
+  skills scripts apple-music cron plugins/hermes-push \
+  | incus exec mercure -- tar -C "$DST" -xf -
 
 # optionnel : profil Chromium de bladebro (cookies + logins web, 165 Mo)
-# tar -C "$SRC" -cf - blade-state | incus exec mercure -- tar -C /opt/data -xf -
+# tar -C "$SRC" -cf - blade-state | incus exec mercure -- tar -C "$DST" -xf -
 
-incus exec mercure -- chown -R 1000:1000 /opt/data
+incus exec mercure -- chown -R 1000:1000 "$DST"
+
+# les trois fichiers qui citent l'ancien /opt/data
+incus exec mercure -- su - raphaelgc -c "
+  sed -i 's#/opt/data/.hermes#$DST#g; s#/opt/data#$DST#g' \
+    $DST/config.yaml $DST/.env $DST/cron/jobs.json
+"
 ```
 
-Les deux seuls chemins absolus de `config.yaml` pointent déjà sur `/opt/data`
-(`DONSETCH_CACHE_DIR`, `BLADE_HOME`) : rien à réécrire. Retirer juste le
-workaround conteneur :
+`~/.hermes` existe déjà (le code Hermes y est installé en §2). Les seuls chemins
+absolus à réécrire sont `DONSETCH_CACHE_DIR` et `BLADE_HOME` dans `config.yaml`,
+`APPLE_MUSIC_P8_PATH` dans `.env`, et les scripts cités par `cron/jobs.json` —
+d'où le `sed`. Les `skills/` peuvent encore mentionner `/opt/data` dans leur
+documentation : à rafraîchir à l'usage, ça ne bloque pas l'exécution.
+
+Retirer aussi le workaround conteneur :
 
 ```sh
-incus exec mercure -- sed -i '/DONGHOST_NO_SANDBOX/d' /opt/data/config.yaml
+incus exec mercure -- sed -i '/DONGHOST_NO_SANDBOX/d' "$DST/config.yaml"
 ```
 
 `config.yaml` contient des credentials en clair (`GITHUB_TOKEN`, clés Karakeep) :
@@ -171,9 +181,8 @@ il est en 0600, ne le copie pas hors de la VM.
 ### 4. Gateway + dashboard
 
 ```sh
-# `sudo` réinitialise l'environnement : passer HERMES_HOME via `sudo env`,
-# sinon root travaille dans /root/.hermes.
-incus exec mercure -- sudo env HERMES_HOME=/opt/data \
+# root ne résout pas ~/.hermes tout seul : expliciter le défaut de raphaelgc
+incus exec mercure -- sudo env HERMES_HOME=/home/raphaelgc/.hermes \
   /home/raphaelgc/.local/bin/hermes gateway install --system \
   --run-as-user raphaelgc --start-now
 
@@ -182,13 +191,19 @@ incus exec mercure -- loginctl enable-linger raphaelgc
 ```
 
 `--system` installe une unité system-level (démarrage au boot), `--run-as-user`
-fixe l'utilisateur et `HERMES_HOME` pointe sur `/opt/data`. L'unité s'appelle
-`hermes-gateway-<hash>` (hash du `HERMES_HOME` non standard, ici
-`hermes-gateway-b7dd404e`) : `systemctl status|stop 'hermes-gateway*'` marche sur
-une unité chargée, mais pour la (re)démarrer après un arrêt, utilise le nom
-complet — un glob ne relance pas une unité déchargée. Éviter `hermes gateway
-stop|restart` en root : la commande vérifie que `/opt/data` appartient à
-l'utilisateur appelant et refuse (`unsafe_control_path`).
+fixe l'utilisateur et `HERMES_HOME` pointe sur le défaut (`~/.hermes` de
+raphaelgc). L'unité s'appelle `hermes-gateway` ou `hermes-gateway-<hash>` :
+récupère-la plutôt que de la deviner —
+
+```sh
+UNIT=$(incus exec mercure -- systemctl list-unit-files --no-legend 'hermes-gateway*' | awk '{print $1}')
+```
+
+`systemctl status|stop 'hermes-gateway*'` marche sur une unité chargée, mais pour
+la (re)démarrer après un arrêt, utilise `$UNIT` — un glob ne relance pas une
+unité déchargée. Éviter `hermes gateway stop|restart` en root : la commande
+vérifie que le home appartient à l'utilisateur appelant et refuse
+(`unsafe_control_path`).
 
 Si l'install échoue sur `refusing to update …hermes-agent` ou `no dependency
 environment is committed`, une mise à jour a été interrompue : la finir en
@@ -196,7 +211,7 @@ environment is committed`, une mise à jour a été interrompue : la finir en
 
 Le dashboard web n'est **pas** couvert par le service du gateway : il a sa propre
 unité. Écouter sur `0.0.0.0` active l'auth gate, dont les identifiants sont
-`HERMES_DASHBOARD_BASIC_AUTH_*` dans `/opt/data/.env`.
+`HERMES_DASHBOARD_BASIC_AUTH_*` dans `~/.hermes/.env`.
 
 ```sh
 incus exec mercure -- bash -c 'cat >/etc/systemd/system/hermes-dashboard.service <<"EOF"
@@ -207,7 +222,6 @@ Wants=network-online.target
 
 [Service]
 User=raphaelgc
-Environment=HERMES_HOME=/opt/data
 ExecStart=/home/raphaelgc/.local/bin/hermes dashboard --host 0.0.0.0 --port 9119 --no-open
 Restart=always
 RestartSec=10
@@ -220,15 +234,16 @@ systemctl daemon-reload && systemctl enable --now hermes-dashboard'
 ```
 
 `RestartPreventExitStatus=78` évite la boucle de redémarrage quand Hermes refuse
-volontairement de démarrer (port déjà servi). Le process lit lui-même
-`$HERMES_HOME/.env`, donc pas d'`EnvironmentFile`. Si les extras web manquent,
-`hermes dashboard` affiche la commande à lancer.
+volontairement de démarrer (port déjà servi). Le service tourne en `raphaelgc`,
+donc `HOME=~` et le home par défaut ; le process lit lui-même `~/.hermes/.env`,
+pas d'`EnvironmentFile`. Si les extras web manquent, `hermes dashboard` affiche
+la commande à lancer.
 
 Vérification :
 
 ```sh
-incus exec mercure -- su - raphaelgc -c 'HERMES_HOME=/opt/data hermes doctor'
-incus exec mercure -- systemctl is-active hermes-gateway-b7dd404e hermes-dashboard
+incus exec mercure -- su - raphaelgc -c 'hermes doctor'
+incus exec mercure -- systemctl is-active $UNIT hermes-dashboard
 ```
 
 ### 5. Accès réseau
@@ -266,15 +281,13 @@ Le pool incus n'est pas dans restic. La sauvegarde, c'est Hermes :
 
 ```sh
 # snapshot complet (config, skills, sessions, state.db) dans la VM
-incus exec mercure -- su - raphaelgc -c \
-  'HERMES_HOME=/opt/data hermes backup -o /home/raphaelgc/hermes.zip'
+incus exec mercure -- su - raphaelgc -c 'hermes backup -o /home/raphaelgc/hermes.zip'
 
 # le sortir de la VM pour la rétention (restic voit /data)
 incus file pull mercure/home/raphaelgc/hermes.zip /data/backups/
 
 # restauration
-incus exec mercure -- su - raphaelgc -c \
-  'HERMES_HOME=/opt/data hermes import /home/raphaelgc/hermes.zip'
+incus exec mercure -- su - raphaelgc -c 'hermes import /home/raphaelgc/hermes.zip'
 ```
 
 `--quick` limite le zip aux fichiers critiques (config, state.db, .env, auth,
