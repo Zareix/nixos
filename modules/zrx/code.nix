@@ -7,114 +7,67 @@
   ...
 }: let
   cfg = config.zrx.code;
-  jsonFormat = pkgs.formats.json {};
-  agentsRelPath = ".agents/AGENTS.md";
-  hasContext = lib.isPath cfg.context || cfg.context != "";
+  agentsMd = ../../home/agents/AGENTS.md;
+  t3codePkg = pkgs-unstable.t3code.override {
+    enableCodex = false;
+    enableOpencode = true;
+  };
 in {
   options.zrx.code = {
-    enable = lib.mkEnableOption "AI coding agents configuration (OpenCode & Antigravity CLI).";
-
-    context = lib.mkOption {
-      type = lib.types.either lib.types.lines lib.types.path;
-      default = ../../home/agents/AGENTS.md;
-      description = "Global agent instructions written to ~/${agentsRelPath} and shared with configured coding agents.";
-    };
-
-    opencode = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Enable OpenCode.";
-      };
-
-      package = lib.mkOption {
-        type = lib.types.package;
-        default = pkgs-unstable.opencode;
-        description = "OpenCode package to install.";
-      };
-
-      extraPackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [];
-        description = "Extra packages made available on OpenCode's PATH.";
-      };
-
-      settings = lib.mkOption {
-        type = jsonFormat.type;
-        default = {};
-        description = "Additional OpenCode settings written to ~/.config/opencode/opencode.json.";
-      };
-
-      tui = lib.mkOption {
-        type = jsonFormat.type;
-        default = {};
-        description = "OpenCode TUI configuration written to ~/.config/opencode/tui.json.";
-      };
-    };
-
-    antigravity = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Enable Antigravity CLI (agy).";
-      };
-
-      package = lib.mkOption {
-        type = lib.types.package;
-        default = pkgs-unstable.antigravity-cli;
-        description = "Antigravity CLI package to install.";
-      };
-
-      settings = lib.mkOption {
-        type = jsonFormat.type;
-        default = {};
-        description = "Antigravity CLI settings written to ~/.gemini/antigravity-cli/settings.json.";
-      };
-    };
+    enable = lib.mkEnableOption "AI coding agents (OpenCode, Antigravity CLI, T3 Code).";
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [pkgs.nodejs];
 
-    sops.secrets.opencode_go_api_key = lib.mkIf cfg.opencode.enable {
+    users.users.${globals.username}.linger = true;
+
+    sops.secrets.opencode_go_api_key = {
       sopsFile = ../../secrets/home.yaml;
       owner = globals.username;
       mode = "0400";
     };
 
     home-manager.users.${globals.username} = {
-      home.file.${agentsRelPath} = lib.mkIf hasContext (
-        if lib.isPath cfg.context
-        then {source = cfg.context;}
-        else {text = cfg.context;}
-      );
+      home.file.".agents/AGENTS.md".source = agentsMd;
 
-      programs.opencode = lib.mkIf cfg.opencode.enable {
+      programs.opencode = {
         enable = true;
-        package = cfg.opencode.package;
-        extraPackages = cfg.opencode.extraPackages;
-        settings =
-          lib.recursiveUpdate
-          {
-            autoupdate = false;
-            providers."opencode-go".settings.apiKey = "{file:${config.sops.secrets.opencode_go_api_key.path}}";
-          }
-          (cfg.opencode.settings
-            // {
-              instructions =
-                lib.optional hasContext "~/${agentsRelPath}"
-                ++ (cfg.opencode.settings.instructions or []);
-            });
-        tui = cfg.opencode.tui;
+        package = pkgs-unstable.opencode;
+        settings = {
+          autoupdate = false;
+          instructions = ["~/.agents/AGENTS.md"];
+          providers."opencode-go".settings.apiKey = "{file:${config.sops.secrets.opencode_go_api_key.path}}";
+        };
       };
 
-      programs.antigravity-cli = lib.mkIf cfg.antigravity.enable {
+      programs.antigravity-cli = {
         enable = true;
-        package = cfg.antigravity.package;
-        settings = cfg.antigravity.settings;
-        context = lib.optionalAttrs hasContext {
-          AGENTS = cfg.context;
+        package = pkgs-unstable.antigravity-cli;
+        context.AGENTS = agentsMd;
+      };
+
+      programs.t3code = {
+        enable = true;
+        package = t3codePkg;
+      };
+
+      systemd.user.services.t3code = {
+        Unit = {
+          Description = "T3 Code server";
+          After = ["network-online.target"];
         };
+        Service = {
+          ExecStart = "${t3codePkg}/bin/t3 serve --lan";
+          WorkingDirectory = "%h";
+          Environment = [
+            "PATH=/etc/profiles/per-user/${globals.username}/bin:/run/current-system/sw/bin:/usr/bin:/bin"
+          ];
+          EnvironmentFile = "-%h/.t3/service.env";
+          Restart = "on-failure";
+          RestartSec = 5;
+        };
+        Install.WantedBy = ["default.target"];
       };
     };
   };
