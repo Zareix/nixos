@@ -1,4 +1,4 @@
-{pkgs, pkgs-unstable, ...}: {
+{pkgs, ...}: {
   environment.systemPackages = with pkgs; [
     alejandra
     age
@@ -18,7 +18,6 @@
     nano
     ncdu
     nettools
-    # pkgs-unstable.opencode
     nixd
     nixfmt
     nixos-generators

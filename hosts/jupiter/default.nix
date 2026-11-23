@@ -4,6 +4,7 @@
   ];
 
   zrx = {
+    code.enable = true;
     docker.enable = true;
     tailscale.enable = true;
     shareServer = {
