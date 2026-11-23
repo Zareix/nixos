@@ -74,6 +74,14 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [pkgs.nodejs];
+
+    sops.secrets.opencode_go_api_key = lib.mkIf cfg.opencode.enable {
+      sopsFile = ../../secrets/home.yaml;
+      owner = globals.username;
+      mode = "0400";
+    };
+
     home-manager.users.${globals.username} = {
       home.file.${agentsRelPath} = lib.mkIf hasContext (
         if lib.isPath cfg.context
@@ -86,15 +94,17 @@ in {
         package = cfg.opencode.package;
         extraPackages = cfg.opencode.extraPackages;
         settings =
+          lib.recursiveUpdate
           {
             autoupdate = false;
+            providers."opencode-go".settings.apiKey = "{file:${config.sops.secrets.opencode_go_api_key.path}}";
           }
-          // cfg.opencode.settings
-          // {
-            instructions =
-              lib.optional hasContext "~/${agentsRelPath}"
-              ++ (cfg.opencode.settings.instructions or []);
-          };
+          (cfg.opencode.settings
+            // {
+              instructions =
+                lib.optional hasContext "~/${agentsRelPath}"
+                ++ (cfg.opencode.settings.instructions or []);
+            });
         tui = cfg.opencode.tui;
       };
 
