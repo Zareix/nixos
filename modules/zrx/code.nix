@@ -14,6 +14,8 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    environment.localBinInPath = true;
+    environment.variables.T3CODE_CLOUDFLARED_PATH = "${pkgs.cloudflared}/bin/cloudflared";
     environment.systemPackages = [
       pkgs.nodejs
       pkgs.cloudflared
@@ -32,8 +34,6 @@ in {
     };
 
     home-manager.users.${globals.username} = {
-      home.sessionPath = ["$HOME/.local/bin"];
-      home.sessionVariables.T3CODE_CLOUDFLARED_PATH = "${pkgs.cloudflared}/bin/cloudflared";
       home.file.".agents/AGENTS.md".source = agentsMd;
 
       programs.opencode = {
