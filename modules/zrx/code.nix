@@ -8,19 +8,22 @@
 }: let
   cfg = config.zrx.code;
   agentsMd = ../../home/agents/AGENTS.md;
-  t3codePkg = pkgs-unstable.t3code.override {
-    enableCodex = false;
-    enableOpencode = true;
-  };
 in {
   options.zrx.code = {
-    enable = lib.mkEnableOption "AI coding agents (OpenCode, Antigravity CLI, T3 Code).";
+    enable = lib.mkEnableOption "AI coding agents (OpenCode, Antigravity CLI) and T3 Code prerequisites.";
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [pkgs.nodejs];
+    environment.systemPackages = [
+      pkgs.nodejs
+      pkgs.cloudflared
+    ];
 
     users.users.${globals.username}.linger = true;
+
+    systemd.user.extraConfig = ''
+      DefaultEnvironment="T3CODE_CLOUDFLARED_PATH=${pkgs.cloudflared}/bin/cloudflared"
+    '';
 
     sops.secrets.opencode_go_api_key = {
       sopsFile = ../../secrets/home.yaml;
@@ -29,6 +32,8 @@ in {
     };
 
     home-manager.users.${globals.username} = {
+      home.sessionPath = ["$HOME/.local/bin"];
+      home.sessionVariables.T3CODE_CLOUDFLARED_PATH = "${pkgs.cloudflared}/bin/cloudflared";
       home.file.".agents/AGENTS.md".source = agentsMd;
 
       programs.opencode = {
@@ -45,29 +50,6 @@ in {
         enable = true;
         package = pkgs-unstable.antigravity-cli;
         context.AGENTS = agentsMd;
-      };
-
-      programs.t3code = {
-        enable = true;
-        package = t3codePkg;
-      };
-
-      systemd.user.services.t3code = {
-        Unit = {
-          Description = "T3 Code server";
-          After = ["network-online.target"];
-        };
-        Service = {
-          ExecStart = "${t3codePkg}/bin/t3 serve --lan";
-          WorkingDirectory = "%h";
-          Environment = [
-            "PATH=/etc/profiles/per-user/${globals.username}/bin:/run/current-system/sw/bin:/usr/bin:/bin"
-          ];
-          EnvironmentFile = "-%h/.t3/service.env";
-          Restart = "on-failure";
-          RestartSec = 5;
-        };
-        Install.WantedBy = ["default.target"];
       };
     };
   };
